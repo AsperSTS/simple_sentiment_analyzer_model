@@ -1,13 +1,14 @@
-pandas
+
 numpy==1.23.5
-scikit-learn
-seaborn
-matplotlib
-transformers
-torch
-nltk
-spacy
-wordcloud
-imblearn
-spacy
+imblearn==0.12.4
+pandas==2.2.2
+numpy==1.23.5
+scikit-learn==1.5.1
+seaborn==0.13.2
+matplotlib==3.9.2
+transformers==4.46.3
+torch==2.5.1
+nltk==3.9.1
+spacy==3.7.5
+wordcloud==1.9.4
 python -m spacy download es_core_news_sm

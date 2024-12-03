@@ -1,27 +1,84 @@
 # Analizador de Sentimientos con SVM y Embeddings de Roberta
 
-Este proyecto implementa un analizador de sentimientos en español que utiliza:
+Un analizador de sentimientos en español que combina Support Vector Machine (SVM) con embeddings del modelo Roberta para clasificación de texto.
 
-* **SVM (Support Vector Machine)** como algoritmo principal de clasificación.
-* **Embeddings de Roberta (PlanTL-GOB-ES/roberta-base-bne)** para la representación vectorial de las palabras.
+## Descripción
 
-## Características
+Este proyecto implementa un sistema de análisis de sentimientos utilizando:
 
-* Preprocesamiento de texto: normalización, tokenización, eliminación de stop words y lematización.
-* Extracción de embeddings de Roberta.
-* Entrenamiento de un modelo SVM con kernel RBF.
-* Evaluación del modelo con validación cruzada y métricas de clasificación.
-* Visualización de resultados con matrices de confusión y boxplots.
-* Guardado del modelo entrenado en un archivo pickle.
-* Predicción de sentimientos para nuevos textos.
+- SVM (Support Vector Machine) como algoritmo de clasificación
+- Embeddings contextuales del modelo PlanTL-GOB-ES/roberta-base-bne
+- Técnicas avanzadas de procesamiento de lenguaje natural
 
-## Requisitos
+## Características Principales
 
-* Python 3.7 o superior
-* Las bibliotecas listadas en `requirements.txt`
+### Procesamiento de Texto
+- Normalización y limpieza de texto
+- Tokenización especializada para español
+- Eliminación de stop words
+- Lematización mediante spaCy
+
+### Modelo y Análisis
+- Extracción de embeddings usando Roberta
+- Clasificación mediante SVM con kernel RBF
+- Evaluación completa del modelo mediante:
+  - Validación cruzada
+  - Métricas de clasificación
+  - Matrices de confusión
+  - Visualización mediante boxplots
+
+### Funcionalidades
+- Entrenamiento automatizado del modelo
+- Guardado y carga del modelo entrenado
+- Predicción de sentimientos para textos nuevos
+- Visualización de resultados y métricas
+
+## Requisitos del Sistema
+
+- Python 3.7 o superior
+- Dependencias especificadas en `requirements.txt`
+- Espacio en disco suficiente para modelos y embeddings
 
 ## Instalación
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/AsperSTS/simple_sentiment_analyzer_model.git
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/AsperSTS/simple_sentiment_analyzer_model.git
+cd simple_sentiment_analyzer_model
+```
+
+### 2. Configurar el Entorno
+
+#### Opción A: Usando Anaconda (Recomendado), incluye dependencias
+```bash
+# Crear el entorno desde el archivo environment.yml
+conda env create -f environment.yml
+
+# Activar el entorno
+conda activate sentiment_analyzer_env
+```
+
+#### Opción B: Usando pip
+```bash
+# Crear un entorno virtual (opcional pero recomendado)
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+```
+
+### 3. Instalar Recursos Lingüísticos
+```bash
+python -m spacy download es_core_news_sm
+```
+
+## Notas Importantes
+
+- En caso de errores durante la instalación, revisar `environment.yml` o `requirements.txt`
+- Si hay problemas con la descarga de stopwords de spaCy, se puede eliminar esa línea de los archivos de dependencias
+- Asegurarse de tener suficiente espacio en disco para los modelos de embeddings
+
+## Contacto y Soporte
+
+Para reportar problemas o sugerir mejoras, por favor crear un issue en el repositorio de GitHub.
