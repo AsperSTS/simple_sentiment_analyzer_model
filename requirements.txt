@@ -1,0 +1,11 @@
+pandas
+numpy==1.23.5
+scikit-learn
+seaborn
+matplotlib
+transformers
+torch
+nltk
+spacy
+wordcloud
+python -m spacy download es_core_news_sm
