@@ -8,4 +8,6 @@ torch
 nltk
 spacy
 wordcloud
+imblearn
+spacy
 python -m spacy download es_core_news_sm
