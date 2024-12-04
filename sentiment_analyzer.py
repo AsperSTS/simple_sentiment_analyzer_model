@@ -22,6 +22,7 @@ import time
 import os
 import datetime
 import json
+
 warnings.filterwarnings('ignore')
 
 class SentimentAnalyzer:
@@ -36,9 +37,9 @@ class SentimentAnalyzer:
         self.label_encoder = LabelEncoder()
         
         
-        self.svm_c_parameter = 1.0
+        self.svm_c_parameter = 1.5
         self.svm_gamma_parameter = 'scale'
-        self.svm_kernel_parameter = 'sigmoid'
+        self.svm_kernel_parameter = 'linear'
         '''
         RBF kernel is worst than linear
         Poly no
@@ -74,16 +75,7 @@ class SentimentAnalyzer:
         print("Preprocesando el texto...")
         """Preprocesa el texto aplicando normalización básica."""
         if not isinstance(text, str):
-            return ""
-        
-        # # Convertir a minúsculas y eliminar caracteres especiales
-        # text = text.lower()
-        # text = re.sub(r'[^\w\s]', '', text)
-        # # Tokenización y eliminación de stopwords
-        # tokens = word_tokenize(text)
-        # tokens = [self.stemmer.stem(token) for token in tokens if token not in self.stop_words]
-        # return ' '.join(tokens)
-        # Añadir más pasos de limpieza
+            return ""     
         
         text = re.sub(r'[^\w\sáéíóúñü]', '', text)  # Mantener acentos y ñ
         text = re.sub(r'\s+', ' ', text)  # Normalizar espacios
@@ -94,21 +86,22 @@ class SentimentAnalyzer:
         
         return ' '.join(tokens)
 
-    # def get_bert_embedding(self, text):
-    #     """Obtiene el embedding BERT para un texto dado."""
-    #     inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    #     with torch.no_grad():
-    #         outputs = self.model(**inputs)
-    #     # Usar el embedding del token [CLS] como representación del texto
-    #     return outputs.last_hidden_state[:, 0, :].numpy()
     def get_bert_embedding(self, text):
-        
-        print("Obteniendo embedding BERT...")
+        """Obtiene el embedding BERT para un texto dado."""
+        print("Obteniendo representacion vectorial...")        
         inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
         with torch.no_grad():
             outputs = self.model(**inputs)
-        # Usar la media de todos los embeddings
-        return outputs.last_hidden_state.mean(dim=1).numpy()
+        # Usar el embedding del token [CLS] como representación del texto
+        return outputs.last_hidden_state[:, 0, :].numpy()
+    # def get_bert_embedding(self, text):
+        
+    #     print("Obteniendo embedding BERT...")
+    #     inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+    #     with torch.no_grad():
+    #         outputs = self.model(**inputs)
+    #     # Usar la media de todos los embeddings
+    #     return outputs.last_hidden_state.mean(dim=1).numpy()
 
     def prepare_data(self, df):
         print(f"Preparando datos para el entrenamiento...")
