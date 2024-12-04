@@ -22,6 +22,7 @@ import time
 import os
 import datetime
 import json
+from scipy import stats
 
 warnings.filterwarnings('ignore')
 
@@ -212,23 +213,6 @@ class SentimentAnalyzer:
         probabilities = self.classifier.predict_proba(embedding)
         sentiment = self.label_encoder.inverse_transform(prediction)[0]
         return sentiment, dict(zip(self.label_encoder.classes_, probabilities[0]))
-    def perform_eda(self, df):
-        print("Realizando análisis exploratorio de datos...")
-        """Realizar análisis exploratorio de datos."""
-        # Distribución de sentimientos
-        sentiment_counts = df['sentiment'].value_counts()
-        plt.figure(figsize=(10, 6))
-        sentiment_counts.plot(kind='bar')
-        plt.title('Distribución de Sentimientos')
-        plt.savefig('distribucion_sentimientos.png')
-        
-        for sentiment in df['sentiment'].unique():
-            text = ' '.join(df[df['sentiment'] == sentiment]['text'])
-            wordcloud = WordCloud().generate(text)
-            plt.figure()
-            plt.imshow(wordcloud)
-            plt.title(f'Palabras frecuentes - {sentiment}')
-            plt.savefig(f'wordcloud_{sentiment}.png')
     def save_experiment_metrics(self, results, execution_time):
         """
         Guarda las métricas y parámetros del experimento en un archivo JSON.
@@ -289,13 +273,124 @@ class SentimentAnalyzer:
             json.dump(metrics_data, f, ensure_ascii=False, indent=4)
         
         print(f"Métricas guardadas en: {metrics_file}")
+    def perform_eda(self, df):
+        """
+        Perform exploratory data analysis on the survey dataset.
+        
+        Parameters:
+        df (pandas.DataFrame): Input dataset
+        
+        Returns:
+        dict: Dictionary containing analysis results
+        """
+        analysis_results = {}
+        
+        # Basic dataset info
+        analysis_results['shape'] = df.shape
+        analysis_results['missing_values'] = df.isnull().sum()
+        
+        # Demographic analysis
+        demographics = {
+            'edad_stats': df['Edad:'].describe(),
+            'genero_dist': df['Género:'].value_counts(),
+            'nivel_socioeco_dist': df['Nivel socioeconómico:'].value_counts(),
+            'education_dist': df['Grado de estudios:'].value_counts()
+        }
+        analysis_results['demographics'] = demographics
+        
+        # Text responses analysis
+        text_columns = [col for col in df.columns if col.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.', '10.'))]
+        text_analysis = {}
+        for col in text_columns:
+            text_analysis[col] = {
+                'response_length': df[col].str.len().describe(),
+                'word_count': df[col].str.split().str.len().describe()
+            }
+        analysis_results['text_analysis'] = text_analysis
+        
+        # Geographic distribution
+        geo_dist = {
+            'estado_dist': df['Estado de origen:'].value_counts(),
+            'municipio_dist': df['Municipio de origen:'].value_counts()
+        }
+        analysis_results['geographic_distribution'] = geo_dist
+        
+        # Occupation analysis
+        occupation_dist = {
+            'status': df['Actualmente te encuentras:'].value_counts(),
+            'work_area': df['Si actualmente trabajas. ¿En qué área trabajas?'].value_counts()
+        }
+        analysis_results['occupation_analysis'] = occupation_dist
+        
+        # Create visualizations
+        plt.figure(figsize=(15, 10))
+        
+        # Age distribution
+        plt.subplot(2, 2, 1)
+        sns.histplot(df['Edad:'])
+        plt.title('Distribución de Edad')
+        
+        # Gender distribution
+        plt.subplot(2, 2, 2)
+        df['Género:'].value_counts().plot(kind='pie')
+        plt.title('Distribución de Género')
+        
+        # Education level
+        plt.subplot(2, 2, 3)
+        sns.countplot(data=df, y='Grado de estudios:')
+        plt.title('Nivel de Educación')
+        
+        # Socioeconomic level
+        plt.subplot(2, 2, 4)
+        sns.countplot(data=df, y='Nivel socioeconómico:')
+        plt.title('Nivel Socioeconómico')
+        
+        plt.tight_layout()
+        analysis_results['visualizations'] = plt.gcf()
+        
+        return analysis_results
+    def save_eda(self, results):
+        # Convert numpy/pandas objects to native Python types
+        def convert_to_serializable(obj):
+            if isinstance(obj, (np.integer, np.floating)):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, pd.Series):
+                return obj.to_dict()
+            elif isinstance(obj, pd.Index):
+                return obj.tolist()
+            return str(obj)
+
+        # Create copy of results without matplotlib figure
+        results_copy = results.copy()
+        results_copy.pop('visualizations', None)
+        
+        # Save visualizations
+        plt.savefig(os.path.join(self.experiment_dir, 'eda_visualizations.png'))
+        
+        # Save results to JSON
+        json_path = os.path.join(self.experiment_dir, 'eda_results.json')
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(results_copy, f, default=convert_to_serializable, 
+                    ensure_ascii=False, indent=4)
+
+        
 def main():
     start_time = time.time()
     # Cargar datos
     df = pd.read_csv('Textos_Dataset_Completo_utf8.csv')
     analyzer = SentimentAnalyzer()
     
-    # analyzer.perform_eda(df)
+    
+    # df_null = df.isnull().sum()
+    
+    # df_null.to_csv('null.csv')
+    
+    # Ejecutar el análisis
+    results = analyzer.perform_eda(df)
+    analyzer.save_eda(results)
+    
     
     # Inicializar y entrenar el modelo
     X, y = analyzer.prepare_data(df)
