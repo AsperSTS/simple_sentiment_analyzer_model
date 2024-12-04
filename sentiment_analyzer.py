@@ -24,6 +24,7 @@ class SentimentAnalyzer:
             self.utils = AnalyzerUtils(self)
             
             self.generate_train_test_data = True
+            self.remarks = "None"
             
             self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
             self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
@@ -190,7 +191,15 @@ class SentimentAnalyzer:
         probabilities = self.svm_classifier.predict_proba(embedding)
         sentiment = self.label_encoder.inverse_transform(prediction)[0]
         return sentiment, dict(zip(self.label_encoder.classes_, probabilities[0]))
- 
+    def color_texto(self, texto, color):
+        colores = {
+            'rojo': '\033[91m',
+            'verde': '\033[92m',
+            'azul': '\033[94m',
+            'amarillo': '\033[93m',
+            'fin': '\033[0m',  # Restablece el color
+        }
+        return colores.get(color, '') + texto + colores['fin']
 def main():
     start_time = time.time()
     # Cargar datos
@@ -198,6 +207,25 @@ def main():
     
     df =df[df['edad'] <= 30]
     analyzer = SentimentAnalyzer()
+    
+    # Input para las observaciones, con color amarillo para resaltar
+    analyzer.remarks = input(analyzer.color_texto("Ingresa tus modificaciones o observaciones: ", 'amarillo'))
+    
+
+    # Input para preparar un nuevo train dataset o cargar desde archivos npy
+    respuesta = input(
+        """
+        ¿Quieres preparar un nuevo train dataset? 
+        
+        """
+        + analyzer.color_texto("Esto tomará aproximadamente 800 segundos.", "rojo")
+        + """
+        
+        (y/n): 
+        """
+    )
+    analyzer.generate_train_test_data = (lambda x: x.lower() in ('y', ''))(respuesta)
+    
     
     # Ejecutar el análisis
     results_eda = analyzer.utils.perform_eda(df)

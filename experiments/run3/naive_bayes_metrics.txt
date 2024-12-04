@@ -20,4 +20,4 @@ Reporte de Clasificación:
 weighted avg       0.52      0.49      0.49       683
 
 
-Tiempo de ejecución: 767.56 segundos
+Tiempo de ejecución: 63.44 segundos

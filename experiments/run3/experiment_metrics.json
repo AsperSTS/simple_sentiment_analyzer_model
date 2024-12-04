@@ -1,6 +1,7 @@
 {
     "experiment_id": "run3",
-    "timestamp": "2024-12-04 16:36:02",
+    "timestamp": "2024-12-04 16:51:49",
+    "****Observaciones****": "Se eliminaron las columnas con edad mayor a 30",
     "model_parameters": {
         "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
         "classifier": "SVM",
@@ -66,6 +67,6 @@
         }
     },
     "execution_metrics": {
-        "total_execution_time": 767.5600166320801
+        "total_execution_time": 63.4416286945343
     }
 }

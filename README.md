@@ -49,7 +49,7 @@ cd simple_sentiment_analyzer_model
 
 ### 2. Configurar el Entorno
 
-#### Opción A: Usando Anaconda (Recomendado), incluye dependencias
+#### Usando Anaconda creamos un nuevo entorno
 ```bash
 # Crear el entorno desde el archivo environment.yml
 conda env create -f environment.yml
@@ -58,11 +58,8 @@ conda env create -f environment.yml
 conda activate sentiment_analyzer_env
 ```
 
-#### Opción B: Usando pip
+#### Instalamos dependencias faltantes con pip
 ```bash
-# Crear un entorno virtual (opcional pero recomendado)
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt

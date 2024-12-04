@@ -71,6 +71,7 @@ class AnalyzerUtils:
         metrics_data = {
             'experiment_id': os.path.basename(self.analyzer.experiment_dir),
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            '****Observaciones****': self.analyzer.remarks,
             'model_parameters': {
                 'embedding_model': self.analyzer.pretrained_model_name,
                 'classifier': 'SVM',
