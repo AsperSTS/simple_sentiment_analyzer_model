@@ -1,6 +1,6 @@
 {
     "experiment_id": "run1",
-    "timestamp": "2024-12-04 13:58:03",
+    "timestamp": "2024-12-04 15:02:37",
     "model_parameters": {
         "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
         "classifier": "SVM",
@@ -116,6 +116,6 @@
         ]
     },
     "execution_metrics": {
-        "total_execution_time": 1476.2404999732971
+        "total_execution_time": 27.26196265220642
     }
 }

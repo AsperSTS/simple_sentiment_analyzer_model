@@ -222,7 +222,7 @@ class AnalyzerUtils:
                 fmt='d',
                 xticklabels=self.analyzer.label_encoder.classes_,
                 yticklabels=self.analyzer.label_encoder.classes_)
-        plt.title(f'Matriz de Confusión - tokenizer: {self.analyzer.pretrained_model_name} - kernel: {self.analyzer.svm_kernel_parameter} - c: {self.analyzer.svm_c_parameter} - tol: {self.analyzer.svm_tolerance_parameter}')
+        plt.title(f'Matriz de Confusión - algoritm - {algoritm}')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
         plt.savefig(os.path.join(self.analyzer.experiment_dir,f'matriz_confusion_{algoritm}.png'))
@@ -231,7 +231,7 @@ class AnalyzerUtils:
         # Resultados de validación cruzada
         plt.figure(figsize=(8, 6))
         plt.boxplot(results['cv_scores'])
-        plt.title(f'Validación Cruzada - tokenizer: {self.analyzer.pretrained_model_name} - kernel: {self.analyzer.svm_kernel_parameter} - c: {self.analyzer.svm_c_parameter} - tol: {self.analyzer.svm_tolerance_parameter}')
+        plt.title(f'Validación Cruzada - algoritm - {algoritm}')
         plt.ylabel('Puntuación')
         plt.savefig(os.path.join(self.analyzer.experiment_dir,f'validacion_cruzada_{algoritm}.png'))
         # plt.show()
