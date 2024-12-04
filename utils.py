@@ -225,7 +225,7 @@ class AnalyzerUtils:
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
         plt.savefig(os.path.join(self.analyzer.experiment_dir,f'matriz_confusion_{algoritm}.png'))
-        plt.show()
+        # plt.show()
 
         # Resultados de validación cruzada
         plt.figure(figsize=(8, 6))
@@ -233,4 +233,31 @@ class AnalyzerUtils:
         plt.title(f'Validación Cruzada - tokenizer: {self.analyzer.pretrained_model_name} - kernel: {self.analyzer.svm_kernel_parameter} - c: {self.analyzer.svm_c_parameter} - tol: {self.analyzer.svm_tolerance_parameter}')
         plt.ylabel('Puntuación')
         plt.savefig(os.path.join(self.analyzer.experiment_dir,f'validacion_cruzada_{algoritm}.png'))
-        plt.show()
+        # plt.show()
+    def save_train_test_data(self, X, y, file_prefix="dataset"):
+        """
+        Guarda las matrices X e y en archivos separados con un prefijo común.
+        
+        Args:
+        - X (np.ndarray): Características.
+        - y (np.ndarray): Etiquetas.
+        - file_prefix (str): Prefijo para los archivos (sin extensión).
+        """
+        np.save(f"{file_prefix}_X.npy", X)
+        np.save(f"{file_prefix}_y.npy", y)
+        print(f"Datos guardados como {file_prefix}_X.npy y {file_prefix}_y.npy")
+    def load_train_test_data(self, file_prefix="dataset"):
+        """
+        Carga las matrices X e y desde archivos guardados previamente.
+        
+        Args:
+        - file_prefix (str): Prefijo de los archivos (sin extensión).
+        
+        Returns:
+        - X (np.ndarray): Características cargadas.
+        - y (np.ndarray): Etiquetas cargadas.
+        """
+        X = np.load(f"{file_prefix}_X.npy")
+        y = np.load(f"{file_prefix}_y.npy")
+        print(f"Datos cargados desde {file_prefix}_X.npy y {file_prefix}_y.npy")
+        return X, y

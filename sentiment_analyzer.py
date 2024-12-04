@@ -29,6 +29,8 @@ class SentimentAnalyzer:
     def __init__(self):
             self.utils = AnalyzerUtils(self)
             
+            self.generate_train_test_data = True
+            
             self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
             self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
             self.model = AutoModel.from_pretrained(self.pretrained_model_name)
@@ -205,9 +207,23 @@ def main():
     results_eda = analyzer.utils.perform_eda(df)
     analyzer.utils.save_eda(results_eda)
     
-    # Inicializar y entrenar el modelo
-    X, y = analyzer.prepare_data(df)
-    
+    # Manejar datos de entrenamiento y prueba
+    try:
+        if analyzer.generate_train_test_data:
+            # Generar datos de entrenamiento desde cero
+            X, y = analyzer.prepare_data(df)
+            # Guardar datos para uso futuro
+            analyzer.utils.save_train_test_data(X, y, file_prefix="prepared_data")
+        else:
+            # Cargar datos previamente guardados
+            X, y = analyzer.utils.load_train_test_data(file_prefix="prepared_data")
+            
+    except FileNotFoundError as e:
+        print(f"Error: {e}. Generando datos desde cero.")
+        X, y = analyzer.prepare_data(df)
+        analyzer.utils.save_train_test_data(X, y, file_prefix="prepared_data")
+        
+        
     results_svm = analyzer.train_svm(X, y)
     results_nb = analyzer.train_naive_bayes(X, y)
     results_knn = analyzer.train_knn(X, y)
