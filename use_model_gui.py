@@ -29,7 +29,7 @@ class SentimentPrecedictor:
         return {d.name: d for d in model_dirs}
 
     def load_model(self):
-        with open('sentiment_model_2.pkl', 'rb') as f:
+        with open('sentiment_model_3.pkl', 'rb') as f:
             components = pickle.load(f)
         
         analyzer = SentimentAnalyzer()

@@ -36,10 +36,10 @@ class SentimentAnalyzer:
         self.model = AutoModel.from_pretrained(self.pretrained_model_name)
         self.label_encoder = LabelEncoder()
         
-        self.svm_c_parameter = 10 # Default 1
+        self.svm_c_parameter = 1 # Default 1
         self.svm_kernel_parameter = 'linear' # Default 'rbf'
-        self.svm_tolerance_parameter = 0.0001 # Default 0.001
-        self.svm_class_weight_parameter = 'balanced' # Default None
+        self.svm_tolerance_parameter = 0.01 # Default 0.001
+        self.svm_class_weight_parameter = None # Default None
         '''
         RBF kernel is worst than linear
         Poly no
