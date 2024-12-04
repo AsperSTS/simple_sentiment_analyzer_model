@@ -29,11 +29,22 @@ class SentimentAnalyzer:
         # Inicializar componentes necesarios
         # self.tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
         # self.model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
+        
         self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
         self.tokenizer = AutoTokenizer.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.model = AutoModel.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.label_encoder = LabelEncoder()
-        self.classifier = SVC(kernel='linear' , probability=True)
+        
+        
+        self.svm_c_parameter = 1.0
+        self.svm_gamma_parameter = 'scale'
+        self.svm_kernel_parameter = 'sigmoid'
+        '''
+        RBF kernel is worst than linear
+        Poly no
+        '''
+        
+        self.classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, C=self.svm_c_parameter, gamma=self.svm_gamma_parameter)
         self.stemmer = SnowballStemmer('spanish')
         nltk.download('punkt')
         nltk.download('stopwords')
@@ -193,7 +204,7 @@ class SentimentAnalyzer:
                    fmt='d',
                    xticklabels=self.label_encoder.classes_,
                    yticklabels=self.label_encoder.classes_)
-        plt.title('Matriz de Confusión')
+        plt.title(f'Matriz de Confusión - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
         plt.savefig(os.path.join(self.experiment_dir,f'matriz_confusion_{counter}.png'))
@@ -202,7 +213,7 @@ class SentimentAnalyzer:
         # Resultados de validación cruzada
         plt.figure(figsize=(8, 6))
         plt.boxplot(results['cv_scores'])
-        plt.title('Distribución de Puntuaciones en Validación Cruzada')
+        plt.title(f'Validación Cruzada - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
         plt.ylabel('Puntuación')
         plt.savefig(os.path.join(self.experiment_dir,f'validacion_cruzada_{counter}.png'))
         plt.show()
@@ -263,8 +274,9 @@ class SentimentAnalyzer:
             'model_parameters': {
                 'embedding_model': self.pretrained_model_name,
                 'classifier': 'SVM',
-                # 'kernel': self.classifier.kernel,
-                # 'probability': self.classifier.probability,
+                'kernel': self.svm_kernel_parameter,
+                'C': self.svm_c_parameter,
+                'Gamma': self.svm_gamma_parameter,
             },
             'preprocessing_parameters': {
                 'stemmer': 'SnowballStemmer-spanish',
