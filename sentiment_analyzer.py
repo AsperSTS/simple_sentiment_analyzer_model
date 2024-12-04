@@ -31,21 +31,21 @@ class SentimentAnalyzer:
         # self.tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
         # self.model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
         
-        self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
-        self.tokenizer = AutoTokenizer.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
-        self.model = AutoModel.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
+        self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne" #"dccuchile/bert-base-spanish-wwm-uncased" 
+        self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
+        self.model = AutoModel.from_pretrained(self.pretrained_model_name)
         self.label_encoder = LabelEncoder()
         
-        
-        self.svm_c_parameter = 1.5
-        self.svm_gamma_parameter = 'scale'
-        self.svm_kernel_parameter = 'linear'
+        self.svm_c_parameter = 10 # Default 1
+        self.svm_kernel_parameter = 'linear' # Default 'rbf'
+        self.svm_tolerance_parameter = 0.0001 # Default 0.001
+        self.svm_class_weight_parameter = 'balanced' # Default None
         '''
         RBF kernel is worst than linear
         Poly no
         '''
         
-        self.classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, C=self.svm_c_parameter, gamma=self.svm_gamma_parameter)
+        self.classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, C=self.svm_c_parameter, tol= self.svm_tolerance_parameter, class_weight=self.svm_class_weight_parameter)
         self.stemmer = SnowballStemmer('spanish')
         nltk.download('punkt')
         nltk.download('stopwords')
@@ -87,21 +87,13 @@ class SentimentAnalyzer:
         return ' '.join(tokens)
 
     def get_bert_embedding(self, text):
-        """Obtiene el embedding BERT para un texto dado."""
-        print("Obteniendo representacion vectorial...")        
+        
+        print("Obteniendo embedding BERT...")
         inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
         with torch.no_grad():
             outputs = self.model(**inputs)
-        # Usar el embedding del token [CLS] como representación del texto
-        return outputs.last_hidden_state[:, 0, :].numpy()
-    # def get_bert_embedding(self, text):
-        
-    #     print("Obteniendo embedding BERT...")
-    #     inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    #     with torch.no_grad():
-    #         outputs = self.model(**inputs)
-    #     # Usar la media de todos los embeddings
-    #     return outputs.last_hidden_state.mean(dim=1).numpy()
+        # Usar la media de todos los embeddings
+        return outputs.last_hidden_state.mean(dim=1).numpy()
 
     def prepare_data(self, df):
         print(f"Preparando datos para el entrenamiento...")
@@ -174,13 +166,13 @@ class SentimentAnalyzer:
         }
     def contar_pk1_mas_uno(self, directorio='.'):
         """
-        Cuenta el número de archivos .pk1 en un directorio y le suma 1.
+        Cuenta el número de archivos .pkl en un directorio y le suma 1.
 
         Args:
             directorio: La ruta al directorio que se va a examinar.
 
         Returns:
-            El número de archivos .pk1 en el directorio + 1.
+            El número de archivos .pkl en el directorio + 1.
         """
         contador = 0
         for archivo in os.listdir(directorio):
@@ -197,7 +189,7 @@ class SentimentAnalyzer:
                    fmt='d',
                    xticklabels=self.label_encoder.classes_,
                    yticklabels=self.label_encoder.classes_)
-        plt.title(f'Matriz de Confusión - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
+        plt.title(f'Matriz de Confusión - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - c: {self.svm_c_parameter} - tol: {self.svm_tolerance_parameter}')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
         plt.savefig(os.path.join(self.experiment_dir,f'matriz_confusion_{counter}.png'))
@@ -206,7 +198,7 @@ class SentimentAnalyzer:
         # Resultados de validación cruzada
         plt.figure(figsize=(8, 6))
         plt.boxplot(results['cv_scores'])
-        plt.title(f'Validación Cruzada - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
+        plt.title(f'Validación Cruzada - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - c: {self.svm_c_parameter} - tol: {self.svm_tolerance_parameter}')
         plt.ylabel('Puntuación')
         plt.savefig(os.path.join(self.experiment_dir,f'validacion_cruzada_{counter}.png'))
         plt.show()
@@ -269,7 +261,8 @@ class SentimentAnalyzer:
                 'classifier': 'SVM',
                 'kernel': self.svm_kernel_parameter,
                 'C': self.svm_c_parameter,
-                'Gamma': self.svm_gamma_parameter,
+                'tolerance': self.svm_tolerance_parameter,
+                'class_weight': self.svm_class_weight_parameter
             },
             'preprocessing_parameters': {
                 'stemmer': 'SnowballStemmer-spanish',

@@ -1,0 +1,121 @@
+{
+    "experiment_id": "run11",
+    "timestamp": "2024-12-03 23:46:22",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "linear",
+        "C": 2.5,
+        "tolerance": 0.0001,
+        "class_weight": "balanced"
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.7014492753623188,
+            "std": 0.03141954114301275,
+            "scores": [
+                0.7014492753623188,
+                0.6652173913043479,
+                0.672463768115942,
+                0.7159420289855073,
+                0.7521739130434782
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.67,
+                "recall": 0.63,
+                "f1-score": 0.65,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.7,
+                "recall": 0.9,
+                "f1-score": 0.79,
+                "support": 96
+            },
+            "2": {
+                "precision": 0.63,
+                "recall": 0.63,
+                "f1-score": 0.63,
+                "support": 128
+            },
+            "3": {
+                "precision": 0.65,
+                "recall": 0.6,
+                "f1-score": 0.62,
+                "support": 115
+            },
+            "4": {
+                "precision": 0.79,
+                "recall": 0.71,
+                "f1-score": 0.75,
+                "support": 119
+            },
+            "5": {
+                "precision": 0.74,
+                "recall": 0.74,
+                "f1-score": 0.74,
+                "support": 116
+            }
+        },
+        "confusion_matrix": [
+            [
+                73,
+                5,
+                15,
+                6,
+                10,
+                7
+            ],
+            [
+                1,
+                86,
+                2,
+                2,
+                4,
+                1
+            ],
+            [
+                11,
+                7,
+                81,
+                17,
+                2,
+                10
+            ],
+            [
+                7,
+                11,
+                16,
+                69,
+                4,
+                8
+            ],
+            [
+                8,
+                12,
+                6,
+                3,
+                85,
+                5
+            ],
+            [
+                9,
+                1,
+                9,
+                9,
+                2,
+                86
+            ]
+        ]
+    },
+    "execution_metrics": {
+        "total_execution_time": 875.6219906806946
+    }
+}

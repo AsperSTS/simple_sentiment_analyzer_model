@@ -1,0 +1,120 @@
+{
+    "experiment_id": "run10",
+    "timestamp": "2024-12-03 23:02:37",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "linear",
+        "C": 1.5,
+        "Gamma": "scale"
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.6707246376811595,
+            "std": 0.024084148496047546,
+            "scores": [
+                0.672463768115942,
+                0.6521739130434783,
+                0.6492753623188405,
+                0.663768115942029,
+                0.7159420289855073
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.78,
+                "recall": 0.64,
+                "f1-score": 0.7,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.6,
+                "recall": 0.77,
+                "f1-score": 0.67,
+                "support": 96
+            },
+            "2": {
+                "precision": 0.51,
+                "recall": 0.62,
+                "f1-score": 0.56,
+                "support": 128
+            },
+            "3": {
+                "precision": 0.67,
+                "recall": 0.57,
+                "f1-score": 0.62,
+                "support": 115
+            },
+            "4": {
+                "precision": 0.81,
+                "recall": 0.67,
+                "f1-score": 0.73,
+                "support": 119
+            },
+            "5": {
+                "precision": 0.63,
+                "recall": 0.65,
+                "f1-score": 0.64,
+                "support": 116
+            }
+        },
+        "confusion_matrix": [
+            [
+                74,
+                4,
+                16,
+                9,
+                4,
+                9
+            ],
+            [
+                1,
+                74,
+                4,
+                2,
+                7,
+                8
+            ],
+            [
+                8,
+                10,
+                79,
+                13,
+                3,
+                15
+            ],
+            [
+                4,
+                9,
+                25,
+                66,
+                2,
+                9
+            ],
+            [
+                2,
+                22,
+                7,
+                5,
+                80,
+                3
+            ],
+            [
+                6,
+                5,
+                23,
+                4,
+                3,
+                75
+            ]
+        ]
+    },
+    "execution_metrics": {
+        "total_execution_time": 870.2500638961792
+    }
+}
