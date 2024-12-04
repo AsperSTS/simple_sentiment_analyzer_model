@@ -90,8 +90,7 @@ class AnalyzerUtils:
                     'std': float(np.std(results['cv_scores'])),
                     'scores': results['cv_scores'].tolist()
                 },
-                'classification_metrics': classification_dict,
-                'confusion_matrix': results['confusion_matrix'].tolist()
+                'classification_metrics': classification_dict
             },
             'execution_metrics': {
                 'total_execution_time': execution_time,

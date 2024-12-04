@@ -19,13 +19,7 @@ from utils import AnalyzerUtils
 warnings.filterwarnings('ignore')
 
 class SentimentAnalyzer:
-    # def __init__(self):
-    #     # Inicializar componentes necesarios
-    #     self.utils = AnalyzerUtils(self)
-        
-    #     # self.tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
-    #     # self.model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
-            
+
     def __init__(self):
             self.utils = AnalyzerUtils(self)
             

@@ -1,5 +1,7 @@
+
 *.pkl
 docs/
 *.zip
 __pycache__/
-*.npy
+models/
+!label_encoder.pkl
