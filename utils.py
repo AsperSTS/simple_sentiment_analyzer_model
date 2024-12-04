@@ -7,6 +7,7 @@ import seaborn as sns
 import os
 import pickle
 import json
+import joblib
 import datetime
 class AnalyzerUtils:
     def __init__(self, analyzer):
@@ -245,6 +246,7 @@ class AnalyzerUtils:
         """
         np.save(f"{file_prefix}_X.npy", X)
         np.save(f"{file_prefix}_y.npy", y)
+        joblib.dump(self.analyzer.label_encoder, 'label_encoder.pkl')
         print(f"Datos guardados como {file_prefix}_X.npy y {file_prefix}_y.npy")
     def load_train_test_data(self, file_prefix="dataset"):
         """
@@ -260,4 +262,5 @@ class AnalyzerUtils:
         X = np.load(f"{file_prefix}_X.npy")
         y = np.load(f"{file_prefix}_y.npy")
         print(f"Datos cargados desde {file_prefix}_X.npy y {file_prefix}_y.npy")
-        return X, y
+        label_encoder = joblib.load('label_encoder.pkl')
+        return X, y, label_encoder

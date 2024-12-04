@@ -29,7 +29,7 @@ class SentimentAnalyzer:
     def __init__(self):
             self.utils = AnalyzerUtils(self)
             
-            self.generate_train_test_data = True
+            self.generate_train_test_data = False
             
             self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
             self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
@@ -214,9 +214,11 @@ def main():
             X, y = analyzer.prepare_data(df)
             # Guardar datos para uso futuro
             analyzer.utils.save_train_test_data(X, y, file_prefix="prepared_data")
+            
         else:
             # Cargar datos previamente guardados
-            X, y = analyzer.utils.load_train_test_data(file_prefix="prepared_data")
+            X, y, analyzer.label_encoder = analyzer.utils.load_train_test_data(file_prefix="prepared_data")
+            
             
     except FileNotFoundError as e:
         print(f"Error: {e}. Generando datos desde cero.")
@@ -238,8 +240,7 @@ def main():
     analyzer.utils.save_multi_model_metrics(results_knn, 'knn', execution_time)
     
     print(f"Tiempo de ejecución: {execution_time:.2f} segundos")
-    
-    count = analyzer.utils.contar_pk1_mas_uno()
+
     # Guardar métricas del experimento
     analyzer.utils.save_svm_experiment_metrics(results_svm, execution_time)
     

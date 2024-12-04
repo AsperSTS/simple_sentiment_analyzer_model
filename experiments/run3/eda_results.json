@@ -1,0 +1,458 @@
+{
+    "shape": [
+        288,
+        20
+    ],
+    "missing_values": {
+        "Marca temporal": 0,
+        "ID Único": 1,
+        "Edad:": 0,
+        "Género:": 0,
+        "Nivel socioeconómico:": 0,
+        "Grado de estudios:": 0,
+        "Actualmente te encuentras:": 0,
+        "Si actualmente trabajas. ¿En qué área trabajas?": 0,
+        "Estado de origen:": 0,
+        "Municipio de origen:": 0,
+        "1. Describa, ¿en qué situaciones últimamente ha sentido alegría?": 0,
+        "2. Especifique, ¿en qué situaciones últimamente ha sentido ganas de llorar?": 0,
+        "3. En las últimas dos semanas, ¿en qué momentos se ha sentido cansado?": 0,
+        "4. ¿En qué situaciones de su día a día, puede identificar que se ha sentido preocupado?": 0,
+        "5. Cuando la preocupación se hace presente en su vida, ¿cuáles son las sensaciones corporales que experimenta?": 0,
+        "6. Si su escritor favorito le pidiera que le ayude a buscar el significado de la felicidad, ¿cuál sería la idea que usted escribiría?": 0,
+        "7. Cuando tiene una elección importante que hacer, mencione ¿cuáles serían los pasos que seguiría para llegar a tomar una decisión?": 0,
+        "8. Cuando sucede algo inesperado en su vida, por ejemplo: llegar tarde al trabajo, el automóvil se descompuso, se quedó sin batería el celular, olvidar las llaves, etc., describa ¿cómo reacciona ante estas situaciones?": 0,
+        "9. Describa ¿En qué situaciones de su vida considera que se siente estresado o molesto?": 0,
+        "10. Por favor, describa brevemente ¿qué hace cuando tiene que enfrentar una situación difícil?": 0
+    },
+    "demographics": {
+        "edad_stats": {
+            "count": 288.0,
+            "mean": 21.635416666666668,
+            "std": 2.695149049164541,
+            "min": 17.0,
+            "25%": 20.0,
+            "50%": 21.0,
+            "75%": 23.0,
+            "max": 45.0
+        },
+        "genero_dist": {
+            "Masculino": 203,
+            "Femenino": 80,
+            "LGBT+": 5
+        },
+        "nivel_socioeco_dist": {
+            "Medio": 220,
+            "Bajo": 65,
+            "Alto": 3
+        },
+        "education_dist": {
+            "Licenciatura": 211,
+            "Bachillerato": 75,
+            "Maestría": 2
+        }
+    },
+    "text_analysis": {
+        "1. Describa, ¿en qué situaciones últimamente ha sentido alegría?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 77.36111111111111,
+                "std": 73.15132624337929,
+                "min": 2.0,
+                "25%": 30.0,
+                "50%": 57.5,
+                "75%": 94.5,
+                "max": 526.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 13.54513888888889,
+                "std": 13.119314855597228,
+                "min": 1.0,
+                "25%": 5.0,
+                "50%": 10.0,
+                "75%": 16.25,
+                "max": 97.0
+            }
+        },
+        "2. Especifique, ¿en qué situaciones últimamente ha sentido ganas de llorar?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 75.14583333333333,
+                "std": 74.93295202814012,
+                "min": 6.0,
+                "25%": 31.75,
+                "50%": 53.0,
+                "75%": 95.0,
+                "max": 698.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 12.95138888888889,
+                "std": 13.398387682454686,
+                "min": 1.0,
+                "25%": 5.0,
+                "50%": 9.0,
+                "75%": 16.0,
+                "max": 128.0
+            }
+        },
+        "3. En las últimas dos semanas, ¿en qué momentos se ha sentido cansado?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 62.802083333333336,
+                "std": 54.63626058996317,
+                "min": 8.0,
+                "25%": 26.0,
+                "50%": 47.0,
+                "75%": 82.0,
+                "max": 492.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 11.14236111111111,
+                "std": 9.700598637090646,
+                "min": 1.0,
+                "25%": 5.0,
+                "50%": 8.0,
+                "75%": 15.0,
+                "max": 90.0
+            }
+        },
+        "4. ¿En qué situaciones de su día a día, puede identificar que se ha sentido preocupado?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 70.15972222222223,
+                "std": 61.86353005723232,
+                "min": 5.0,
+                "25%": 33.0,
+                "50%": 57.0,
+                "75%": 91.0,
+                "max": 733.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 12.67361111111111,
+                "std": 11.330222210817235,
+                "min": 1.0,
+                "25%": 6.0,
+                "50%": 10.5,
+                "75%": 16.25,
+                "max": 133.0
+            }
+        },
+        "5. Cuando la preocupación se hace presente en su vida, ¿cuáles son las sensaciones corporales que experimenta?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 47.81944444444444,
+                "std": 40.72327841135005,
+                "min": 4.0,
+                "25%": 22.0,
+                "50%": 38.0,
+                "75%": 59.0,
+                "max": 294.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 7.958333333333333,
+                "std": 7.426644751488282,
+                "min": 1.0,
+                "25%": 3.0,
+                "50%": 6.0,
+                "75%": 10.0,
+                "max": 47.0
+            }
+        },
+        "6. Si su escritor favorito le pidiera que le ayude a buscar el significado de la felicidad, ¿cuál sería la idea que usted escribiría?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 102.09027777777777,
+                "std": 103.22938249537066,
+                "min": 3.0,
+                "25%": 37.0,
+                "50%": 72.5,
+                "75%": 126.25,
+                "max": 758.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 18.010416666666668,
+                "std": 17.935906869363478,
+                "min": 1.0,
+                "25%": 6.0,
+                "50%": 13.0,
+                "75%": 23.0,
+                "max": 125.0
+            }
+        },
+        "7. Cuando tiene una elección importante que hacer, mencione ¿cuáles serían los pasos que seguiría para llegar a tomar una decisión?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 120.46875,
+                "std": 78.54845413636441,
+                "min": 7.0,
+                "25%": 68.75,
+                "50%": 106.0,
+                "75%": 151.0,
+                "max": 492.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 20.51388888888889,
+                "std": 13.880518577260501,
+                "min": 1.0,
+                "25%": 12.0,
+                "50%": 17.0,
+                "75%": 26.25,
+                "max": 85.0
+            }
+        },
+        "8. Cuando sucede algo inesperado en su vida, por ejemplo: llegar tarde al trabajo, el automóvil se descompuso, se quedó sin batería el celular, olvidar las llaves, etc., describa ¿cómo reacciona ante estas situaciones?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 94.26736111111111,
+                "std": 73.52101345055013,
+                "min": 5.0,
+                "25%": 42.0,
+                "50%": 81.0,
+                "75%": 124.25,
+                "max": 559.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 16.48611111111111,
+                "std": 13.279092634670288,
+                "min": 1.0,
+                "25%": 7.0,
+                "50%": 14.0,
+                "75%": 22.0,
+                "max": 96.0
+            }
+        },
+        "9. Describa ¿En qué situaciones de su vida considera que se siente estresado o molesto?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 93.43055555555556,
+                "std": 87.44269624058192,
+                "min": 7.0,
+                "25%": 42.0,
+                "50%": 70.0,
+                "75%": 114.25,
+                "max": 781.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 16.46527777777778,
+                "std": 15.305444452472708,
+                "min": 1.0,
+                "25%": 7.0,
+                "50%": 12.0,
+                "75%": 20.0,
+                "max": 143.0
+            }
+        },
+        "10. Por favor, describa brevemente ¿qué hace cuando tiene que enfrentar una situación difícil?": {
+            "response_length": {
+                "count": 288.0,
+                "mean": 104.63541666666667,
+                "std": 73.2212702753216,
+                "min": 4.0,
+                "25%": 52.0,
+                "50%": 88.0,
+                "75%": 135.5,
+                "max": 457.0
+            },
+            "word_count": {
+                "count": 288.0,
+                "mean": 17.927083333333332,
+                "std": 12.740709363575803,
+                "min": 1.0,
+                "25%": 9.0,
+                "50%": 15.0,
+                "75%": 23.0,
+                "max": 78.0
+            }
+        }
+    },
+    "geographic_distribution": {
+        "estado_dist": {
+            "Puebla": 196,
+            "Tlaxcala": 30,
+            "Veracruz": 25,
+            "Oaxaca": 14,
+            "Guerrero": 5,
+            "Morelos": 4,
+            "Ciudad de México": 4,
+            "Tabasco": 2,
+            "Chiapas": 2,
+            "Estado de México": 2,
+            "Hidalgo": 2,
+            "Chihuahua": 1,
+            "Michoacán": 1
+        },
+        "municipio_dist": {
+            "Puebla": 80,
+            "Puebla ": 39,
+            "Córdoba ": 4,
+            "Cuautlancingo": 3,
+            "Oaxaca de Juárez ": 3,
+            "Tlaxcala ": 3,
+            "Zacatelco ": 2,
+            "Tehuacán": 2,
+            "Apizaco": 2,
+            "Chilpancingo": 2,
+            "Ixtacuixtla de Mariano Matamoros": 2,
+            "Cuautlancingo ": 2,
+            "Coronango": 2,
+            "San Pedro Cholula": 2,
+            "Tlapacoyan": 2,
+            "San Pablo del Monte": 2,
+            "PUEBLA": 2,
+            "Tenancingo ": 2,
+            "Tehuacán ": 2,
+            "Amozoc": 2,
+            "San Andrés Cholula": 2,
+            "Acuamanala ": 2,
+            "Tepeaca": 2,
+            "Xicotepec ": 2,
+            "Amozoc ": 2,
+            "Zacatlán": 2,
+            "Coatzacoalcos": 2,
+            "Tecamachalco": 2,
+            "Alvaro Obregon": 1,
+            "San Antonio de la Cal": 1,
+            "San Martin Texmelucan Puebla": 1,
+            "salina cruz oaxaca": 1,
+            "Tepoztlán ": 1,
+            "San Martin Xaltocan": 1,
+            "San pedro cholula": 1,
+            "Coscomatepec": 1,
+            "Ecatepec ": 1,
+            "Coronango ": 1,
+            "Santa Cruz Quilehtla": 1,
+            "Atzitzintla": 1,
+            "Tepetzintla": 1,
+            "San Andrés Calpan Puebla ": 1,
+            "Apizaco ": 1,
+            "Puebla, Puebla": 1,
+            "Cuautempan": 1,
+            "San Pedro Cholula ": 1,
+            "Atoyac de Álvarez": 1,
+            "San Rafael": 1,
+            "Xalapa": 1,
+            "Tepexi de Rodríguez ": 1,
+            "San Pablo del Monte ": 1,
+            "Teziutlán ": 1,
+            "Barrio de la soledad": 1,
+            "Tuxtepec": 1,
+            "Azcapotzalco": 1,
+            "Zongozotla": 1,
+            "Contla de juan cuamatzi ": 1,
+            "Soltepec": 1,
+            "puebla": 1,
+            "Orizaba, Ver ": 1,
+            "Santa María Coronango": 1,
+            "Huajuapan de León": 1,
+            "Tlanepantla ": 1,
+            "Venustiano Carranza": 1,
+            "Poza Rica ": 1,
+            "Cuantlancingo": 1,
+            "Tlanepantla Puebla ": 1,
+            "Misantla": 1,
+            "San Matías Tlalancaleca": 1,
+            "Cuernavaca": 1,
+            "Poza Rica": 1,
+            "Pachuca de Soto": 1,
+            "Sanctorum de Lázaro Cárdenas ": 1,
+            "Tlacotepec de Benito Juárez ": 1,
+            "Acajete": 1,
+            "Nealtican ": 1,
+            "Petlalcingo ": 1,
+            "Ixhuatlán del Café": 1,
+            "Puebla.": 1,
+            "San Andrés Cholula ": 1,
+            "Chilcuautla": 1,
+            "Ayometla": 1,
+            "Zaragoza": 1,
+            "Atlixco ": 1,
+            "Calpulalpan ": 1,
+            "Jantetelco": 1,
+            "Atlixco": 1,
+            "Martinez de la Torre": 1,
+            "Acapulco ": 1,
+            "TUXTLA GUTIERREZ": 1,
+            "Puebla de Zaragoza ": 1,
+            "Texmelucan ": 1,
+            "San Martín Texmelucan": 1,
+            "Palmar de Bravo ": 1,
+            "Huauchinango": 1,
+            "Zihutanejo": 1,
+            "Orizaba": 1,
+            "Santa María Moyotzingo": 1,
+            "Minatitlan": 1,
+            "Cuernavaca ": 1,
+            "Ixtaczoquitlán": 1,
+            "Huejotzingo": 1,
+            "Hueytamalco ": 1,
+            "Calpan": 1,
+            "Huamantla ": 1,
+            "Villahermosa ": 1,
+            "Tochtepec ": 1,
+            "San Matías Tlalancaleca ": 1,
+            "zacatelco ": 1,
+            "San Miguel Xoxtla ": 1,
+            "San Miguel Xoxtla Puebla ": 1,
+            "Huajuapan de León ": 1,
+            "Cd. Juarez": 1,
+            "Zamora": 1,
+            "San Martín Tilcajete": 1,
+            "Tlanepantla": 1,
+            "Juchitan de Zaragoza ": 1,
+            "Totolac": 1,
+            "Acultzingo ": 1,
+            "La Magdalena Tlaltelulco, Tlaxcala ": 1,
+            "Villahermosa": 1,
+            "Izúcar de Matamoros ": 1,
+            "Coatzacoalcos ": 1,
+            "Momoxpan": 1,
+            "Tlacotepec de Benito Juárez": 1,
+            "Tuxtla Gutiérrez": 1,
+            "San Martín Texmelucan ": 1,
+            "Tlacolula de Matamoros": 1,
+            "Nanacamilpa ": 1,
+            "Puebla, Pue.": 1,
+            "Huamantla": 1,
+            "cuautlancingo": 1,
+            "Ixhuatlan del Sureste ": 1,
+            "Chocaman": 1,
+            "Coscomatepec de Bravo": 1,
+            "Cuitlahuac ": 1,
+            "Huajuapan de Leon ": 1,
+            "Zacatelco": 1,
+            "San Agustín Loxicha ": 1,
+            "Tochimilco": 1
+        }
+    },
+    "occupation_analysis": {
+        "status": {
+            "Estudiando": 222,
+            "Ambos": 55,
+            "Trabajando": 8,
+            "Ninguno": 3
+        },
+        "work_area": {
+            "Estudiante - Para quienes están en instituciones educativas.": 108,
+            "Otro - Para quienes no encajen en las categorías anteriores.": 57,
+            "Tecnología e informática - Desarrolladores de software, técnicos de IT, analistas de sistemas, etc.": 31,
+            "Desempleo - Para quienes actualmente no están trabajando.": 28,
+            "Comercio y ventas - Vendedores, gerentes de tienda, representantes de atención al cliente, etc.": 20,
+            "Autoempleo - Emprendedores, freelance, etc.": 18,
+            "Sector administrativo y de oficina - Incluye roles como asistente administrativo, recepcionista, etc.": 8,
+            "Construcción y trabajo manual - Carpinteros, electricistas, plomeros, etc.": 7,
+            "Arte y diseño - Artistas, diseñadores gráficos, fotógrafos, etc.": 4,
+            "Sector de la salud - Médicos, enfermeras, técnicos, terapeutas, etc.": 3,
+            "Sector de la educación - Maestros, educadores, administradores educativos, etc.": 2,
+            "Ingeniería y manufactura - Ingenieros, operadores de maquinaria, técnicos, etc.": 2
+        }
+    }
+}

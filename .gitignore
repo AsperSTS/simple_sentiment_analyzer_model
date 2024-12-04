@@ -2,3 +2,4 @@
 docs/
 *.zip
 __pycache__/
+*.npy
