@@ -33,7 +33,7 @@ class SentimentAnalyzer:
         self.tokenizer = AutoTokenizer.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.model = AutoModel.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.label_encoder = LabelEncoder()
-        self.classifier = SVC(kernel='rbf', probability=True)
+        self.classifier = SVC(kernel='linear' , probability=True)
         self.stemmer = SnowballStemmer('spanish')
         nltk.download('punkt')
         nltk.download('stopwords')
@@ -91,6 +91,7 @@ class SentimentAnalyzer:
     #     # Usar el embedding del token [CLS] como representación del texto
     #     return outputs.last_hidden_state[:, 0, :].numpy()
     def get_bert_embedding(self, text):
+        
         print("Obteniendo embedding BERT...")
         inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
         with torch.no_grad():
@@ -98,43 +99,6 @@ class SentimentAnalyzer:
         # Usar la media de todos los embeddings
         return outputs.last_hidden_state.mean(dim=1).numpy()
 
-    def prepare_data_v1(self, df):
-        print(f"Preparando datos para el entrenamiento...")
-        """Prepara los datos para el entrenamiento."""
-        # Mapear preguntas a sentimientos
-        sentiment_mapping = {
-            1: 'alegria', 6: 'alegria',
-            2: 'tristeza',
-            3: 'estres', 9: 'estres',
-            4: 'inquietud', 5: 'inquietud',
-            7: 'miedo', 10: 'miedo',
-            8: 'enojo'
-        }
-        
-        # Preparar datos de entrenamiento
-        X = []
-        y = []
-        
-        for idx, row in df.iterrows():
-            for q_num in range(1, 11):
-                col_name = f"{q_num}. "
-                cols = [col for col in df.columns if col.startswith(col_name)]
-                if cols:
-                    text = row[cols[0]]
-                    processed_text = self.preprocess_text(text)
-                    if processed_text:
-                        embedding = self.get_bert_embedding(processed_text)
-                        X.append(embedding[0])
-                        y.append(sentiment_mapping[q_num])
-        
-        X = np.array(X)
-        y = self.label_encoder.fit_transform(y)
-        
-        
-        smote = SMOTE(random_state=42)
-        X_balanced, y_balanced = smote.fit_resample(X, y)
-        # print(X_balanced)
-        return X_balanced, y_balanced
     def prepare_data(self, df):
         print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
