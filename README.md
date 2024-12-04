@@ -1,43 +1,35 @@
 # Analizador de Sentimientos con SVM y Embeddings de Roberta
 
-Un analizador de sentimientos en español que combina Support Vector Machine (SVM) con embeddings del modelo Roberta para clasificación de texto.
+Un sistema avanzado de análisis de sentimientos en español que combina Support Vector Machine (SVM) con embeddings del modelo Roberta para clasificación de textos.
 
-## Descripción
+## Pipeline del Sistema
+```mermaid
+graph LR
+    A[Texto] --> B[Preprocesamiento]
+    B --> C[Embeddings Roberta]
+    C --> D[Clasificación SVM]
+    D --> E[Predicción]
+```
 
-Este proyecto implementa un sistema de análisis de sentimientos utilizando:
+## Características
 
-- SVM (Support Vector Machine) como algoritmo de clasificación
-- Embeddings contextuales del modelo PlanTL-GOB-ES/roberta-base-bne
-- Técnicas avanzadas de procesamiento de lenguaje natural
+### Modelos y Técnicas
+- Embeddings contextuales de `PlanTL-GOB-ES/roberta-base-bne`
+- Clasificación mediante SVM, Naive Bayes y KNN
+- Balanceo de datos con SMOTE
+- Validación cruzada y métricas de evaluación
 
-## Características Principales
+### Procesamiento
+- Limpieza y normalización de texto
+- Lematización con spaCy
+- Manejo de características específicas del español
+- Eliminación inteligente de stopwords
 
-### Procesamiento de Texto
-- Normalización y limpieza de texto
-- Tokenización especializada para español
-- Eliminación de stop words
-- Lematización mediante spaCy
-
-### Modelo y Análisis
-- Extracción de embeddings usando Roberta
-- Clasificación mediante SVM con kernel RBF
-- Evaluación completa del modelo mediante:
-  - Validación cruzada
-  - Métricas de clasificación
-  - Matrices de confusión
-  - Visualización mediante boxplots
-
-### Funcionalidades
-- Entrenamiento automatizado del modelo
-- Guardado y carga del modelo entrenado
-- Predicción de sentimientos para textos nuevos
-- Visualización de resultados y métricas
-
-## Requisitos del Sistema
-
-- Python 3.7 o superior
-- Dependencias especificadas en `requirements.txt`
-- Espacio en disco suficiente para modelos y embeddings
+### Evaluación y Visualización
+- Matrices de confusión
+- Reportes de clasificación
+- Visualizaciones interactivas
+- Métricas por modelo
 
 ## Instalación
 
@@ -60,7 +52,6 @@ conda activate sentiment_analyzer_env
 
 #### Instalamos dependencias faltantes con pip
 ```bash
-
 # Instalar dependencias
 pip install -r requirements.txt
 ```
@@ -70,12 +61,15 @@ pip install -r requirements.txt
 python -m spacy download es_core_news_sm
 ```
 
-## Notas Importantes
+## Clasificación de Sentimientos
+- Alegría
+- Tristeza
+- Estrés
+- Inquietud
+- Miedo
+- Enojo
 
-- En caso de errores durante la instalación, revisar `environment.yml` o `requirements.txt`
-- Si hay problemas con la descarga de stopwords de spaCy, se puede eliminar esa línea de los archivos de dependencias
-- Asegurarse de tener suficiente espacio en disco para los modelos de embeddings
+## Requisitos del Sistema
+- Python 3.9+
+- 8GB RAM mínimo
 
-## Contacto y Soporte
-
-Para reportar problemas o sugerir mejoras, por favor crear un issue en el repositorio de GitHub.
