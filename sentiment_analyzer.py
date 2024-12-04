@@ -20,6 +20,8 @@ from imblearn.over_sampling import SMOTE
 from spacy import load
 import time 
 import os
+import datetime
+import json
 warnings.filterwarnings('ignore')
 
 class SentimentAnalyzer:
@@ -27,6 +29,7 @@ class SentimentAnalyzer:
         # Inicializar componentes necesarios
         # self.tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
         # self.model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
+        self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
         self.tokenizer = AutoTokenizer.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.model = AutoModel.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.label_encoder = LabelEncoder()
@@ -35,7 +38,27 @@ class SentimentAnalyzer:
         nltk.download('punkt')
         nltk.download('stopwords')
         self.stop_words = set(stopwords.words('spanish'))
-
+        self.experiment_dir = self.create_experiment_directory()
+    def create_experiment_directory(self):
+        """
+        Crea un nuevo directorio para el experimento actual.
+        """
+        base_dir = 'experiments'
+        os.makedirs(base_dir, exist_ok=True)
+        
+        # Encontrar el siguiente número de ejecución
+        existing_runs = [d for d in os.listdir(base_dir) if d.startswith('run')]
+        if not existing_runs:
+            next_run = 1
+        else:
+            run_numbers = [int(run.replace('run', '')) for run in existing_runs]
+            next_run = max(run_numbers) + 1
+            
+        # Crear directorio para esta ejecución
+        run_dir = os.path.join(base_dir, f'run{next_run}')
+        os.makedirs(run_dir)
+        
+        return run_dir
     def preprocess_text(self, text):
         print("Preprocesando el texto...")
         """Preprocesa el texto aplicando normalización básica."""
@@ -75,7 +98,7 @@ class SentimentAnalyzer:
         # Usar la media de todos los embeddings
         return outputs.last_hidden_state.mean(dim=1).numpy()
 
-    def prepare_data(self, df):
+    def prepare_data_v1(self, df):
         print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
         # Mapear preguntas a sentimientos
@@ -112,7 +135,54 @@ class SentimentAnalyzer:
         X_balanced, y_balanced = smote.fit_resample(X, y)
         # print(X_balanced)
         return X_balanced, y_balanced
-
+    def prepare_data(self, df):
+        print(f"Preparando datos para el entrenamiento...")
+        """Prepara los datos para el entrenamiento."""
+        # Mapear preguntas a sentimientos
+        sentiment_mapping = {
+            1: 'alegria', 6: 'alegria',
+            2: 'tristeza',
+            3: 'estres', 9: 'estres',
+            4: 'inquietud', 5: 'inquietud',
+            7: 'miedo', 10: 'miedo',
+            8: 'enojo'
+        }
+        
+        # Preparar datos de entrenamiento
+        X = []
+        y = []
+        
+        # Mapeo de números de pregunta a nombres de columna en el CSV
+        column_mapping = {
+            1: "1. Describa, ¿en qué situaciones últimamente ha sentido alegría?",
+            2: "2. Especifique, ¿en qué situaciones últimamente ha sentido ganas de llorar?",
+            3: "3. En las últimas dos semanas, ¿en qué momentos se ha sentido cansado?",
+            4: "4. ¿En qué situaciones de su día a día, puede identificar que se ha sentido preocupado?",
+            5: "5. Cuando la preocupación se hace presente en su vida, ¿cuáles son las sensaciones corporales que experimenta?",
+            6: "6. Si su escritor favorito le pidiera que le ayude a buscar el significado de la felicidad, ¿cuál sería la idea que usted escribiría?",
+            7: "7. Cuando tiene una elección importante que hacer, mencione ¿cuáles serían los pasos que seguiría para llegar a tomar una decisión?",
+            8: "8. Cuando sucede algo inesperado en su vida, por ejemplo: llegar tarde al trabajo, el automóvil se descompuso, se quedó sin batería el celular, olvidar las llaves, etc., describa ¿cómo reacciona ante estas situaciones?",
+            9: "9. Describa ¿En qué situaciones de su vida considera que se siente estresado o molesto?",
+            10: "10. Por favor, describa brevemente ¿qué hace cuando tiene que enfrentar una situación difícil?"
+        }
+        
+        for idx, row in df.iterrows():
+            for q_num, column_name in column_mapping.items():
+                if column_name in df.columns:
+                    text = row[column_name]
+                    processed_text = self.preprocess_text(text)
+                    if processed_text:
+                        embedding = self.get_bert_embedding(processed_text)
+                        X.append(embedding[0])
+                        y.append(sentiment_mapping[q_num])
+        
+        X = np.array(X)
+        y = self.label_encoder.fit_transform(y)
+        
+        smote = SMOTE(random_state=42)
+        X_balanced, y_balanced = smote.fit_resample(X, y)
+        
+        return X_balanced, y_balanced
     def train_model(self, X, y):
         print("Entrenando modelo...")
         """Entrena el modelo de clasificación."""
@@ -162,7 +232,7 @@ class SentimentAnalyzer:
         plt.title('Matriz de Confusión')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
-        plt.savefig(f'matriz_confusion_{counter}.png')
+        plt.savefig(os.path.join(self.experiment_dir,f'matriz_confusion_{counter}.png'))
         plt.show()
 
         # Resultados de validación cruzada
@@ -170,7 +240,7 @@ class SentimentAnalyzer:
         plt.boxplot(results['cv_scores'])
         plt.title('Distribución de Puntuaciones en Validación Cruzada')
         plt.ylabel('Puntuación')
-        plt.savefig(f'validacion_cruzada_{counter}.png')
+        plt.savefig(os.path.join(self.experiment_dir,f'validacion_cruzada_{counter}.png'))
         plt.show()
 
     def predict_sentiment(self, text):
@@ -199,7 +269,64 @@ class SentimentAnalyzer:
             plt.imshow(wordcloud)
             plt.title(f'Palabras frecuentes - {sentiment}')
             plt.savefig(f'wordcloud_{sentiment}.png')
+    def save_experiment_metrics(self, results, execution_time):
+        """
+        Guarda las métricas y parámetros del experimento en un archivo JSON.
+        """
+        print("Guardando métricas del experimento...")
+        
+        # Convertir el classification report de string a diccionario de una manera más robusta
+        classification_dict = {}
+        report_lines = results['classification_report'].split('\n')
+        for line in report_lines:
+            if line and not line.startswith('micro') and not line.startswith('macro') and not line.startswith('weighted') and not line.startswith('accuracy'):
+                line_parts = line.strip().split()
+                if len(line_parts) >= 4:  # Asegurarse de que la línea tiene suficientes elementos
+                    class_name = line_parts[0]
+                    try:
+                        classification_dict[class_name] = {
+                            'precision': float(line_parts[1]),
+                            'recall': float(line_parts[2]),
+                            'f1-score': float(line_parts[3]),
+                            'support': int(line_parts[4]) if len(line_parts) > 4 else 0
+                        }
+                    except (ValueError, IndexError):
+                        continue  # Saltarse líneas que no pueden ser parseadas correctamente
 
+        metrics_data = {
+            'experiment_id': os.path.basename(self.experiment_dir),
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'model_parameters': {
+                'embedding_model': self.pretrained_model_name,
+                'classifier': 'SVM',
+                # 'kernel': self.classifier.kernel,
+                # 'probability': self.classifier.probability,
+            },
+            'preprocessing_parameters': {
+                'stemmer': 'SnowballStemmer-spanish',
+                'remove_stopwords': True,
+                'max_length': 512,
+            },
+            'performance_metrics': {
+                'cross_validation_scores': {
+                    'mean': float(np.mean(results['cv_scores'])),
+                    'std': float(np.std(results['cv_scores'])),
+                    'scores': results['cv_scores'].tolist()
+                },
+                'classification_metrics': classification_dict,
+                'confusion_matrix': results['confusion_matrix'].tolist()
+            },
+            'execution_metrics': {
+                'total_execution_time': execution_time,
+            }
+        }
+        
+        # Guardar métricas en archivo JSON
+        metrics_file = os.path.join(self.experiment_dir, 'experiment_metrics.json')
+        with open(metrics_file, 'w', encoding='utf-8') as f:
+            json.dump(metrics_data, f, ensure_ascii=False, indent=4)
+        
+        print(f"Métricas guardadas en: {metrics_file}")
 def main():
     start_time = time.time()
     # Cargar datos
@@ -217,10 +344,14 @@ def main():
     
     end_time = time.time()
     
-    print(f"Tiempo de ejecución: {end_time - start_time:.2f} segundos")
+    execution_time = end_time - start_time
+    print(f"Tiempo de ejecución: {execution_time:.2f} segundos")
     
     count = analyzer.contar_pk1_mas_uno()
 
+    # Guardar métricas del experimento
+    analyzer.save_experiment_metrics(results, execution_time)
+    
     # Visualizar resultados
     analyzer.plot_results(results, count)
     
@@ -239,7 +370,7 @@ def main():
         'tokenizer': analyzer.tokenizer,
         'model': analyzer.model
     }
-    with open(f'sentiment_model_{count}.pkl', 'wb') as f:
+    with open(os.path.join(analyzer.experiment_dir,f'sentiment_model_{count}.pkl'), 'wb') as f:
         pickle.dump(components, f)
     
     # Recorrer la lista de textos para obtener las predicciones
