@@ -32,9 +32,9 @@ class SentimentAnalyzer:
             self.label_encoder = LabelEncoder()
             
             # Initialize SVM parameters
-            self.svm_c_parameter = 1
+            self.svm_c_parameter = 1.5
             self.svm_kernel_parameter = 'linear'
-            self.svm_tolerance_parameter = 0.01
+            self.svm_tolerance_parameter = 0.001
             self.svm_class_weight_parameter = None
             
             # Initialize all classifiers
@@ -205,7 +205,10 @@ def main():
     # Cargar datos
     df = pd.read_csv('dataset_normalizado_utf8.csv')
     
-    df =df[df['edad'] <= 30]
+    df = df[df['edad'] <= 30]
+    df = df[df['grado_estudios'] != "Maestría"]
+    df = df[df['nivel_socioeconomico'] != "Alto"]
+    
     analyzer = SentimentAnalyzer()
     
     # Input para las observaciones, con color amarillo para resaltar

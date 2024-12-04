@@ -1,6 +1,7 @@
 {
     "experiment_id": "run1",
     "timestamp": "2024-12-04 15:32:17",
+    "****Observaciones****": "Se mantienen los mayores a 30, con maestria y nivel socioeconomico alto, con los parametros base",
     "model_parameters": {
         "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
         "classifier": "SVM",
