@@ -1,14 +1,13 @@
 import pickle
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, recall_score, precision_score
 import seaborn as sns
 import matplotlib.pyplot as plt
-from transformers import AutoTokenizer, AutoModel
-import torch
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
@@ -16,9 +15,10 @@ import re
 import nltk
 import warnings
 from wordcloud import WordCloud
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 from spacy import load
-import time 
+import time
 import os
 import datetime
 import json
@@ -27,33 +27,20 @@ warnings.filterwarnings('ignore')
 class SentimentAnalyzer:
     def __init__(self):
         # Inicializar componentes necesarios
-        # self.tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
-        # self.model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-uncased")
-        
-        self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
-        self.tokenizer = AutoTokenizer.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
-        self.model = AutoModel.from_pretrained("PlanTL-GOB-ES/roberta-base-bne")
         self.label_encoder = LabelEncoder()
-        
-        
         self.svm_c_parameter = 1.0
         self.svm_gamma_parameter = 'scale'
         self.svm_kernel_parameter = 'sigmoid'
-        '''
-        RBF kernel is worst than linear
-        Poly no
-        '''
-        
-        self.classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, C=self.svm_c_parameter, gamma=self.svm_gamma_parameter)
+        self.classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
+                              C=self.svm_c_parameter, gamma=self.svm_gamma_parameter)
         self.stemmer = SnowballStemmer('spanish')
         nltk.download('punkt')
         nltk.download('stopwords')
         self.stop_words = set(stopwords.words('spanish'))
         self.experiment_dir = self.create_experiment_directory()
+
     def create_experiment_directory(self):
-        """
-        Crea un nuevo directorio para el experimento actual.
-        """
+        """Crea un nuevo directorio para el experimento actual."""
         base_dir = 'experiments'
         os.makedirs(base_dir, exist_ok=True)
         
@@ -70,49 +57,49 @@ class SentimentAnalyzer:
         os.makedirs(run_dir)
         
         return run_dir
+
     def preprocess_text(self, text):
-        print("Preprocesando el texto...")
-        """Preprocesa el texto aplicando normalización básica."""
+        """Preprocesa el texto aplicando normalización y lematización."""
         if not isinstance(text, str):
             return ""
         
-        # # Convertir a minúsculas y eliminar caracteres especiales
-        # text = text.lower()
-        # text = re.sub(r'[^\w\s]', '', text)
-        # # Tokenización y eliminación de stopwords
-        # tokens = word_tokenize(text)
-        # tokens = [self.stemmer.stem(token) for token in tokens if token not in self.stop_words]
-        # return ' '.join(tokens)
-        # Añadir más pasos de limpieza
-        
         text = re.sub(r'[^\w\sáéíóúñü]', '', text)  # Mantener acentos y ñ
         text = re.sub(r'\s+', ' ', text)  # Normalizar espacios
-        # Lematización en lugar de stemming para mantener mejor el significado
+        
+        # Lematización 
         nlp = load('es_core_news_sm')
         doc = nlp(text)
         tokens = [token.lemma_ for token in doc if not token.is_stop]
         
         return ' '.join(tokens)
+    #FUCION TF-IDF
+    def tfidf_features(self, df, column_mapping):
+        """
+        Genera características TF-IDF para las respuestas a las preguntas.
 
-    # def get_bert_embedding(self, text):
-    #     """Obtiene el embedding BERT para un texto dado."""
-    #     inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    #     with torch.no_grad():
-    #         outputs = self.model(**inputs)
-    #     # Usar el embedding del token [CLS] como representación del texto
-    #     return outputs.last_hidden_state[:, 0, :].numpy()
-    def get_bert_embedding(self, text):
-        
-        print("Obteniendo embedding BERT...")
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        # Usar la media de todos los embeddings
-        return outputs.last_hidden_state.mean(dim=1).numpy()
+        Args:
+          df: DataFrame de pandas con las respuestas a las preguntas.
+          column_mapping: Diccionario que mapea los números de pregunta 
+                         a los nombres de columna en el DataFrame.
+
+        Returns:
+          Una matriz numpy con las características TF-IDF.
+        """
+        corpus = []
+        for idx, row in df.iterrows():
+            for q_num, column_name in column_mapping.items():
+                if column_name in df.columns:
+                    text = row[column_name]
+                    corpus.append(text)
+
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform(corpus)
+
+        return tfidf_matrix.toarray()
 
     def prepare_data(self, df):
-        print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
+        print(f"Preparando datos para el entrenamiento...")
         # Mapear preguntas a sentimientos
         sentiment_mapping = {
             1: 'alegria', 6: 'alegria',
@@ -122,10 +109,6 @@ class SentimentAnalyzer:
             7: 'miedo', 10: 'miedo',
             8: 'enojo'
         }
-        
-        # Preparar datos de entrenamiento
-        X = []
-        y = []
         
         # Mapeo de números de pregunta a nombres de columna en el CSV
         column_mapping = {
@@ -141,35 +124,61 @@ class SentimentAnalyzer:
             10: "10. Por favor, describa brevemente ¿qué hace cuando tiene que enfrentar una situación difícil?"
         }
         
+        # Generar características TF-IDF
+        tfidf_matrix = self.tfidf_features(df, column_mapping)
+
+        # Preparar datos de entrenamiento
+        X = []
+        y = []
+
         for idx, row in df.iterrows():
             for q_num, column_name in column_mapping.items():
                 if column_name in df.columns:
                     text = row[column_name]
                     processed_text = self.preprocess_text(text)
                     if processed_text:
-                        embedding = self.get_bert_embedding(processed_text)
-                        X.append(embedding[0])
+                        # Usar TF-IDF como características
+                        X.append(tfidf_matrix[idx]) 
                         y.append(sentiment_mapping[q_num])
-        
+
         X = np.array(X)
         y = self.label_encoder.fit_transform(y)
-        
-        smote = SMOTE(random_state=42)
-        X_balanced, y_balanced = smote.fit_resample(X, y)
-        
+
+        # Experimentar con diferentes técnicas de balanceo de clases
+        # smote = SMOTE(random_state=42)
+        # X_balanced, y_balanced = smote.fit_resample(X, y)
+
+        # oversampler = RandomOverSampler(random_state=42)
+        # X_balanced, y_balanced = oversampler.fit_resample(X, y)
+
+        undersampler = RandomUnderSampler(random_state=42)
+        X_balanced, y_balanced = undersampler.fit_resample(X, y)
+
         return X_balanced, y_balanced
+
     def train_model(self, X, y):
-        print("Entrenando modelo...")
         """Entrena el modelo de clasificación."""
+        print("Entrenando modelo...")
         # División del dataset
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        
-        # Entrenamiento del modelo
-        self.classifier.fit(X_train, y_train)
-        
+
+        # Definir espacio de búsqueda de hiperparámetros
+        param_grid = {
+            'C': [0.1, 1, 10], 
+            'gamma': [1, 0.1, 0.01], 
+            'kernel': ['linear', 'rbf', 'sigmoid']
+        }
+
+        # Realizar búsqueda de cuadrícula
+        grid = GridSearchCV(SVC(), param_grid, refit=True, verbose=2)
+        grid.fit(X_train, y_train)
+
+        # Mejor modelo encontrado
+        self.classifier = grid.best_estimator_
+
         # Validación cruzada
         cv_scores = cross_val_score(self.classifier, X, y, cv=5)
-        
+
         # Evaluación en conjunto de prueba
         y_pred = self.classifier.predict(X_test)
         
@@ -177,8 +186,13 @@ class SentimentAnalyzer:
             'cv_scores': cv_scores,
             'classification_report': classification_report(y_test, y_pred),
             'confusion_matrix': confusion_matrix(y_test, y_pred),
-            'test_data': (X_test, y_test, y_pred)
+            'test_data': (X_test, y_test, y_pred),
+            'accuracy': accuracy_score(y_test, y_pred),
+            'f1_score': f1_score(y_test, y_pred, average='weighted'),
+            'recall': recall_score(y_test, y_pred, average='weighted'),
+            'precision': precision_score(y_test, y_pred, average='weighted')
         }
+
     def contar_pk1_mas_uno(self, directorio='.'):
         """
         Cuenta el número de archivos .pk1 en un directorio y le suma 1.
@@ -194,42 +208,51 @@ class SentimentAnalyzer:
             if archivo.endswith(".pkl"):
                 contador += 1
         return contador + 1
+
     def plot_results(self, results, counter):
-        print("Visualizando resultados...")
         """Visualiza los resultados del modelo."""
+        print("Visualizando resultados...")
         # Matriz de confusión
         plt.figure(figsize=(10, 8))
         sns.heatmap(results['confusion_matrix'], 
-                   annot=True, 
-                   fmt='d',
-                   xticklabels=self.label_encoder.classes_,
-                   yticklabels=self.label_encoder.classes_)
-        plt.title(f'Matriz de Confusión - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
+                    annot=True, 
+                    fmt='d',
+                    xticklabels=self.label_encoder.classes_, 
+                    yticklabels=self.label_encoder.classes_)
+        plt.title(f'Matriz de Confusión - kernel: {self.svm_kernel_parameter} - '
+                  f'gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
-        plt.savefig(os.path.join(self.experiment_dir,f'matriz_confusion_{counter}.png'))
+        plt.savefig(os.path.join(self.experiment_dir, f'matriz_confusion_{counter}.png'))
         plt.show()
 
         # Resultados de validación cruzada
         plt.figure(figsize=(8, 6))
         plt.boxplot(results['cv_scores'])
-        plt.title(f'Validación Cruzada - tokenizer: {self.pretrained_model_name} - kernel: {self.svm_kernel_parameter} - gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
+        plt.title(f'Validación Cruzada - kernel: {self.svm_kernel_parameter} - '
+                  f'gamma: {self.svm_gamma_parameter} - c: {self.svm_c_parameter}')
         plt.ylabel('Puntuación')
-        plt.savefig(os.path.join(self.experiment_dir,f'validacion_cruzada_{counter}.png'))
+        plt.savefig(os.path.join(self.experiment_dir, f'validacion_cruzada_{counter}.png'))
         plt.show()
 
     def predict_sentiment(self, text):
-        print("Prediciendo sentimiento...")
         """Predice el sentimiento para un nuevo texto."""
+        print("Prediciendo sentimiento...")
         processed_text = self.preprocess_text(text)
-        embedding = self.get_bert_embedding(processed_text)
-        prediction = self.classifier.predict(embedding)
-        probabilities = self.classifier.predict_proba(embedding)
+        
+        # Generar características TF-IDF para el nuevo texto
+        tfidf_vectorizer = TfidfVectorizer() 
+        tfidf_vectorizer.fit([processed_text]) # Ajustar el vectorizador al nuevo texto
+        features = tfidf_vectorizer.transform([processed_text]).toarray()
+        
+        prediction = self.classifier.predict(features)
+        probabilities = self.classifier.predict_proba(features)
         sentiment = self.label_encoder.inverse_transform(prediction)[0]
         return sentiment, dict(zip(self.label_encoder.classes_, probabilities[0]))
+
     def perform_eda(self, df):
-        print("Realizando análisis exploratorio de datos...")
         """Realizar análisis exploratorio de datos."""
+        print("Realizando análisis exploratorio de datos...")
         # Distribución de sentimientos
         sentiment_counts = df['sentiment'].value_counts()
         plt.figure(figsize=(10, 6))
@@ -244,19 +267,19 @@ class SentimentAnalyzer:
             plt.imshow(wordcloud)
             plt.title(f'Palabras frecuentes - {sentiment}')
             plt.savefig(f'wordcloud_{sentiment}.png')
+
     def save_experiment_metrics(self, results, execution_time):
-        """
-        Guarda las métricas y parámetros del experimento en un archivo JSON.
-        """
+        """Guarda las métricas y parámetros del experimento en un archivo JSON."""
         print("Guardando métricas del experimento...")
         
-        # Convertir el classification report de string a diccionario de una manera más robusta
+        # Convertir el classification report de string a diccionario
         classification_dict = {}
         report_lines = results['classification_report'].split('\n')
         for line in report_lines:
-            if line and not line.startswith('micro') and not line.startswith('macro') and not line.startswith('weighted') and not line.startswith('accuracy'):
+            if line and not line.startswith('micro') and not line.startswith('macro') and \
+               not line.startswith('weighted') and not line.startswith('accuracy'):
                 line_parts = line.strip().split()
-                if len(line_parts) >= 4:  # Asegurarse de que la línea tiene suficientes elementos
+                if len(line_parts) >= 4: 
                     class_name = line_parts[0]
                     try:
                         classification_dict[class_name] = {
@@ -266,13 +289,13 @@ class SentimentAnalyzer:
                             'support': int(line_parts[4]) if len(line_parts) > 4 else 0
                         }
                     except (ValueError, IndexError):
-                        continue  # Saltarse líneas que no pueden ser parseadas correctamente
+                        continue 
 
         metrics_data = {
             'experiment_id': os.path.basename(self.experiment_dir),
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'model_parameters': {
-                'embedding_model': self.pretrained_model_name,
+                'embedding_model': 'TF-IDF', # Se usa TF-IDF
                 'classifier': 'SVM',
                 'kernel': self.svm_kernel_parameter,
                 'C': self.svm_c_parameter,
@@ -280,8 +303,7 @@ class SentimentAnalyzer:
             },
             'preprocessing_parameters': {
                 'stemmer': 'SnowballStemmer-spanish',
-                'remove_stopwords': True,
-                'max_length': 512,
+                'remove_stopwords': True
             },
             'performance_metrics': {
                 'cross_validation_scores': {
@@ -290,7 +312,11 @@ class SentimentAnalyzer:
                     'scores': results['cv_scores'].tolist()
                 },
                 'classification_metrics': classification_dict,
-                'confusion_matrix': results['confusion_matrix'].tolist()
+                'confusion_matrix': results['confusion_matrix'].tolist(),
+                'accuracy': results['accuracy'],
+                'f1_score': results['f1_score'],
+                'recall': results['recall'],
+                'precision': results['precision']
             },
             'execution_metrics': {
                 'total_execution_time': execution_time,
@@ -303,6 +329,7 @@ class SentimentAnalyzer:
             json.dump(metrics_data, f, ensure_ascii=False, indent=4)
         
         print(f"Métricas guardadas en: {metrics_file}")
+
 def main():
     start_time = time.time()
     # Cargar datos
@@ -313,13 +340,9 @@ def main():
     
     # Inicializar y entrenar el modelo
     X, y = analyzer.prepare_data(df)
-    
-    
-    print(y)
     results = analyzer.train_model(X, y)
     
     end_time = time.time()
-    
     execution_time = end_time - start_time
     print(f"Tiempo de ejecución: {execution_time:.2f} segundos")
     
@@ -340,14 +363,14 @@ def main():
         "Estoy muy enojado por lo que sucedió",
         "Estoy muy emocionado de empezar mi nuevo trabajo"
     ]
+    
     components = {
         'classifier': analyzer.classifier,
         'label_encoder': analyzer.label_encoder,
-        'tokenizer': analyzer.tokenizer,
-        'model': analyzer.model
+        'tfidf_vectorizer': TfidfVectorizer() # Guardar el vectorizador TF-IDF
     }
-    with open(os.path.join(analyzer.experiment_dir,f'sentiment_model_{count}.pkl'), 'wb') as f:
-        pickle.dump(components, f)
+    with open(os.path.join(analyzer.experiment_dir, f'sentiment_model_{count}.pkl'), 'wb') as f:
+        pickle.dump(components,f)
     
     # Recorrer la lista de textos para obtener las predicciones
     for text in texts:
