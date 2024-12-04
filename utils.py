@@ -129,10 +129,10 @@ class AnalyzerUtils:
         
         # Demographic analysis
         demographics = {
-            'edad_stats': df['Edad:'].describe(),
-            'genero_dist': df['Género:'].value_counts(),
-            'nivel_socioeco_dist': df['Nivel socioeconómico:'].value_counts(),
-            'education_dist': df['Grado de estudios:'].value_counts()
+            'edad_stats': df['edad'].describe(),
+            'genero_dist': df['genero'].value_counts(),
+            'nivel_socioeco_dist': df['nivel_socioeconomico'].value_counts(),
+            'education_dist': df['grado_estudios'].value_counts()
         }
         analysis_results['demographics'] = demographics
         
@@ -147,15 +147,15 @@ class AnalyzerUtils:
         analysis_results['text_analysis'] = text_analysis
         
         geo_dist = {
-            'estado_dist': df['Estado de origen:'].value_counts(),
-            'municipio_dist': df['Municipio de origen:'].value_counts()
+            'estado_dist': df['estado_origen'].value_counts(),
+            'municipio_dist': df['municipio_origen'].value_counts()
         }
         analysis_results['geographic_distribution'] = geo_dist
         
         # Occupation analysis
         occupation_dist = {
-            'status': df['Actualmente te encuentras:'].value_counts(),
-            'work_area': df['Si actualmente trabajas. ¿En qué área trabajas?'].value_counts()
+            'status': df['situacion_actual'].value_counts(),
+            'work_area': df['area_trabajo'].value_counts()
         }
         analysis_results['occupation_analysis'] = occupation_dist
         
@@ -164,22 +164,22 @@ class AnalyzerUtils:
         
         # Age distribution
         plt.subplot(2, 2, 1)
-        sns.histplot(df['Edad:'])
+        sns.histplot(df['edad'])
         plt.title('Distribución de Edad')
         
         # Gender distribution
         plt.subplot(2, 2, 2)
-        df['Género:'].value_counts().plot(kind='pie')
+        df['genero'].value_counts().plot(kind='pie')
         plt.title('Distribución de Género')
         
         # Education level
         plt.subplot(2, 2, 3)
-        sns.countplot(data=df, y='Grado de estudios:')
+        sns.countplot(data=df, y='grado_estudios')
         plt.title('Nivel de Educación')
         
         # Socioeconomic level
         plt.subplot(2, 2, 4)
-        sns.countplot(data=df, y='Nivel socioeconómico:')
+        sns.countplot(data=df, y='nivel_socioeconomico')
         plt.title('Nivel Socioeconómico')
         
         plt.tight_layout()

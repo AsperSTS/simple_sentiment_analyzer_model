@@ -23,7 +23,7 @@ class SentimentAnalyzer:
     def __init__(self):
             self.utils = AnalyzerUtils(self)
             
-            self.generate_train_test_data = False
+            self.generate_train_test_data = True
             
             self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
             self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
@@ -92,16 +92,16 @@ class SentimentAnalyzer:
         
         # Mapeo de números de pregunta a nombres de columna en el CSV
         column_mapping = {
-            1: "1. Describa, ¿en qué situaciones últimamente ha sentido alegría?",
-            2: "2. Especifique, ¿en qué situaciones últimamente ha sentido ganas de llorar?",
-            3: "3. En las últimas dos semanas, ¿en qué momentos se ha sentido cansado?",
-            4: "4. ¿En qué situaciones de su día a día, puede identificar que se ha sentido preocupado?",
-            5: "5. Cuando la preocupación se hace presente en su vida, ¿cuáles son las sensaciones corporales que experimenta?",
-            6: "6. Si su escritor favorito le pidiera que le ayude a buscar el significado de la felicidad, ¿cuál sería la idea que usted escribiría?",
-            7: "7. Cuando tiene una elección importante que hacer, mencione ¿cuáles serían los pasos que seguiría para llegar a tomar una decisión?",
-            8: "8. Cuando sucede algo inesperado en su vida, por ejemplo: llegar tarde al trabajo, el automóvil se descompuso, se quedó sin batería el celular, olvidar las llaves, etc., describa ¿cómo reacciona ante estas situaciones?",
-            9: "9. Describa ¿En qué situaciones de su vida considera que se siente estresado o molesto?",
-            10: "10. Por favor, describa brevemente ¿qué hace cuando tiene que enfrentar una situación difícil?"
+            1: "pregunta_1",
+            2: "pregunta_2",
+            3: "pregunta_3",
+            4: "pregunta_4",
+            5: "pregunta_5",
+            6: "pregunta_6",
+            7: "pregunta_7",
+            8: "pregunta_8",
+            9: "pregunta_9",
+            10: "pregunta_10"
         }
         
         for idx, row in df.iterrows():
@@ -194,7 +194,9 @@ class SentimentAnalyzer:
 def main():
     start_time = time.time()
     # Cargar datos
-    df = pd.read_csv('Textos_Dataset_Completo_utf8.csv')
+    df = pd.read_csv('dataset_normalizado_utf8.csv')
+    
+    df =df[df['edad'] <= 30]
     analyzer = SentimentAnalyzer()
     
     # Ejecutar el análisis
