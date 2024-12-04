@@ -228,7 +228,9 @@ def main():
     analyzer.utils.save_svm_experiment_metrics(results_svm, execution_time)
     
     # Visualizar resultados
-    analyzer.utils.plot_results(results_svm, count)
+    analyzer.utils.plot_results(results_svm, "svm")
+    analyzer.utils.plot_results(results_knn, "knn")
+    analyzer.utils.plot_results(results_nb, "naive_bayes")
     
     # Lista de textos para testear el modelo
     texts = [
@@ -239,8 +241,10 @@ def main():
         "Estoy muy enojado por lo que sucedió",
         "Estoy muy emocionado de empezar mi nuevo trabajo"
     ]
+    
+    # Saving SVM Model
     components = {
-        'classifier': analyzer.classifier,
+        'classifier': analyzer.svm_classifier,
         'label_encoder': analyzer.label_encoder,
         'tokenizer': analyzer.tokenizer,
         'model': analyzer.model

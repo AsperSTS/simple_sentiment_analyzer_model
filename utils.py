@@ -211,7 +211,7 @@ class AnalyzerUtils:
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(results_copy, f, default=convert_to_serializable, 
                     ensure_ascii=False, indent=4)
-    def plot_results(self, results, counter):
+    def plot_results(self, results, algoritm):
         print("Visualizando resultados...")
         """Visualiza los resultados del modelo."""
         # Matriz de confusión
@@ -224,7 +224,7 @@ class AnalyzerUtils:
         plt.title(f'Matriz de Confusión - tokenizer: {self.analyzer.pretrained_model_name} - kernel: {self.analyzer.svm_kernel_parameter} - c: {self.analyzer.svm_c_parameter} - tol: {self.analyzer.svm_tolerance_parameter}')
         plt.ylabel('Verdadero')
         plt.xlabel('Predicho')
-        plt.savefig(os.path.join(self.analyzer.experiment_dir,f'matriz_confusion_{counter}.png'))
+        plt.savefig(os.path.join(self.analyzer.experiment_dir,f'matriz_confusion_{algoritm}.png'))
         plt.show()
 
         # Resultados de validación cruzada
@@ -232,5 +232,5 @@ class AnalyzerUtils:
         plt.boxplot(results['cv_scores'])
         plt.title(f'Validación Cruzada - tokenizer: {self.analyzer.pretrained_model_name} - kernel: {self.analyzer.svm_kernel_parameter} - c: {self.analyzer.svm_c_parameter} - tol: {self.analyzer.svm_tolerance_parameter}')
         plt.ylabel('Puntuación')
-        plt.savefig(os.path.join(self.analyzer.experiment_dir,f'validacion_cruzada_{counter}.png'))
+        plt.savefig(os.path.join(self.analyzer.experiment_dir,f'validacion_cruzada_{algoritm}.png'))
         plt.show()
