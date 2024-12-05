@@ -5,3 +5,4 @@ docs/
 __pycache__/
 models/
 !label_encoder.pkl
+*.npy
