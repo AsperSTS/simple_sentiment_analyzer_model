@@ -37,6 +37,7 @@ class SentimentAnalyzer:
             self.remarks = "None"
             
             self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
+            
             self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
             self.model = AutoModel.from_pretrained(self.pretrained_model_name)
             self.label_encoder = LabelEncoder()
@@ -115,7 +116,6 @@ class SentimentAnalyzer:
             9: "pregunta_9",
             10: "pregunta_10"
         }
-        scaler = StandardScaler()
         
         for idx, row in df.iterrows():
             for q_num, column_name in column_mapping.items():
@@ -128,16 +128,10 @@ class SentimentAnalyzer:
                         y.append(sentiment_mapping[q_num])
         
         X = np.array(X)
-        X = scaler.fit_transform(X)  # Normalizar features
+        y = self.label_encoder.fit_transform(y)
         
-        # Ajustar parámetros de SMOTE
-        smote = SMOTE(random_state=42, k_neighbors=5, sampling_strategy='auto')
+        smote = SMOTE(random_state=42)
         X_balanced, y_balanced = smote.fit_resample(X, y)
-        # X = np.array(X)
-        # y = self.label_encoder.fit_transform(y)
-        
-        # smote = SMOTE(random_state=42)
-        # X_balanced, y_balanced = smote.fit_resample(X, y)
         
         return X_balanced, y_balanced
     def train_svm(self, X, y):  

@@ -1,6 +1,6 @@
 
 numpy==1.23.5
-imblearn==0.12.4
+imblearn
 pandas==2.2.2
 numpy==1.23.5
 scikit-learn==1.5.1

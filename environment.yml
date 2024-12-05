@@ -12,3 +12,5 @@ dependencies:
   - nltk==3.9.1
   - spacy==3.7.5
   - wordcloud==1.9.4
+  - imbalanced-learn
+  - pytorch 
