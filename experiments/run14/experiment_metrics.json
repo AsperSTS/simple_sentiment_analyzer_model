@@ -1,0 +1,72 @@
+{
+    "experiment_id": "run14",
+    "timestamp": "2024-12-04 19:21:06",
+    "****Observaciones****": "Eliminados nivel socioeconomico alto",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "linear",
+        "C": 0.1,
+        "tolerance": 0.0001,
+        "class_weight": "balanced"
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.6312353211422781,
+            "std": 0.023715169972676912,
+            "scores": [
+                0.6456808199121523,
+                0.6046852122986823,
+                0.6281112737920937,
+                0.6090775988286969,
+                0.6686217008797654
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.73,
+                "recall": 0.67,
+                "f1-score": 0.7,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.73,
+                "recall": 0.75,
+                "f1-score": 0.74,
+                "support": 103
+            },
+            "2": {
+                "precision": 0.54,
+                "recall": 0.65,
+                "f1-score": 0.59,
+                "support": 118
+            },
+            "3": {
+                "precision": 0.74,
+                "recall": 0.54,
+                "f1-score": 0.63,
+                "support": 116
+            },
+            "4": {
+                "precision": 0.74,
+                "recall": 0.66,
+                "f1-score": 0.69,
+                "support": 114
+            },
+            "5": {
+                "precision": 0.67,
+                "recall": 0.81,
+                "f1-score": 0.73,
+                "support": 116
+            }
+        }
+    },
+    "execution_metrics": {
+        "total_execution_time": 40.510215520858765
+    }
+}

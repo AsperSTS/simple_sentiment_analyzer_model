@@ -6,6 +6,8 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
 from transformers import AutoTokenizer, AutoModel
 import torch
 from nltk.corpus import stopwords
@@ -17,6 +19,14 @@ from spacy import load
 import time 
 from utils import AnalyzerUtils
 warnings.filterwarnings('ignore')
+
+
+# param_grid = {
+#     'C': [0.1, 1, 2, 5, 10],
+#     'kernel': ['linear', 'rbf'],
+#     'gamma': ['scale', 'auto', 0.1, 1],
+#     'class_weight': ['balanced', None]
+# }
 
 class SentimentAnalyzer:
 
@@ -32,7 +42,7 @@ class SentimentAnalyzer:
             self.label_encoder = LabelEncoder()
             
             # Initialize SVM parameters
-            self.svm_c_parameter = 1
+            self.svm_c_parameter = 2
             self.svm_kernel_parameter = 'linear'
             
             self.svm_tolerance_parameter = 0.0001
@@ -43,7 +53,7 @@ class SentimentAnalyzer:
                                 C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
                                 class_weight=self.svm_class_weight_parameter)
             self.nb_classifier = GaussianNB()
-            self.knn_classifier = KNeighborsClassifier(n_neighbors=5)
+            self.knn_classifier = KNeighborsClassifier(n_neighbors=6)
             
             
             nltk.download('punkt')
@@ -105,6 +115,7 @@ class SentimentAnalyzer:
             9: "pregunta_9",
             10: "pregunta_10"
         }
+        scaler = StandardScaler()
         
         for idx, row in df.iterrows():
             for q_num, column_name in column_mapping.items():
@@ -117,10 +128,16 @@ class SentimentAnalyzer:
                         y.append(sentiment_mapping[q_num])
         
         X = np.array(X)
-        y = self.label_encoder.fit_transform(y)
+        X = scaler.fit_transform(X)  # Normalizar features
         
-        smote = SMOTE(random_state=42)
+        # Ajustar parámetros de SMOTE
+        smote = SMOTE(random_state=42, k_neighbors=5, sampling_strategy='auto')
         X_balanced, y_balanced = smote.fit_resample(X, y)
+        # X = np.array(X)
+        # y = self.label_encoder.fit_transform(y)
+        
+        # smote = SMOTE(random_state=42)
+        # X_balanced, y_balanced = smote.fit_resample(X, y)
         
         return X_balanced, y_balanced
     def train_svm(self, X, y):  

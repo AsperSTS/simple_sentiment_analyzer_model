@@ -1,0 +1,72 @@
+{
+    "experiment_id": "run15",
+    "timestamp": "2024-12-04 19:22:35",
+    "****Observaciones****": "Eliminados nivel socioeconomico alto",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "linear",
+        "C": 2,
+        "tolerance": 0.0001,
+        "class_weight": "balanced"
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.7035851835313414,
+            "std": 0.027006657948701735,
+            "scores": [
+                0.705710102489019,
+                0.6617862371888726,
+                0.6910688140556369,
+                0.7159590043923866,
+                0.7434017595307918
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.7,
+                "recall": 0.77,
+                "f1-score": 0.73,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.74,
+                "recall": 0.83,
+                "f1-score": 0.78,
+                "support": 103
+            },
+            "2": {
+                "precision": 0.61,
+                "recall": 0.57,
+                "f1-score": 0.59,
+                "support": 118
+            },
+            "3": {
+                "precision": 0.67,
+                "recall": 0.64,
+                "f1-score": 0.65,
+                "support": 116
+            },
+            "4": {
+                "precision": 0.79,
+                "recall": 0.71,
+                "f1-score": 0.75,
+                "support": 114
+            },
+            "5": {
+                "precision": 0.78,
+                "recall": 0.79,
+                "f1-score": 0.79,
+                "support": 116
+            }
+        }
+    },
+    "execution_metrics": {
+        "total_execution_time": 34.80782461166382
+    }
+}
