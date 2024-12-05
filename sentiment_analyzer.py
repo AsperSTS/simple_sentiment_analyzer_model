@@ -1,21 +1,20 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import uniform, randint
-from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV, StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler
 from transformers import AutoTokenizer, AutoModel
 import torch
 from nltk.corpus import stopwords
 import re
 import nltk
 import warnings
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE,ADASYN
 from spacy import load
 import time 
 from utils import AnalyzerUtils
@@ -26,6 +25,14 @@ class SentimentAnalyzer:
 
     def __init__(self):
             self.utils = AnalyzerUtils(self)
+            
+            # Añadir nuevos componentes
+            self.ngram_vectorizer = TfidfVectorizer(
+                ngram_range=(1, 3),
+                max_features=5000,
+                min_df=2
+            )
+            
             
             self.generate_train_test_data = True
             self.remarks = "None"
@@ -47,13 +54,13 @@ class SentimentAnalyzer:
             self.svm_classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
                                 C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
                                 class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter)
-            self.nb_classifier = GaussianNB()
+            self.nb_classifier = ComplementNB(alpha=0.1)#GaussianNB()
             self.knn_classifier = KNeighborsClassifier(n_neighbors=6)
             
             # Definir espacio de búsqueda para RandomizedSearchCV
             self.param_distributions = {
                 'C': uniform(0.1, 10.0),
-                'kernel': ['linear', 'rbf', 'poly'],
+                'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
                 'gamma': uniform(0.001, 1.0),
                 'class_weight': ['balanced', None],
                 'degree': randint(2, 5)  # Solo para kernel poly
@@ -70,12 +77,21 @@ class SentimentAnalyzer:
         if not isinstance(text, str):
             return ""     
         
-        text = re.sub(r'[^\w\sáéíóúñü]', '', text)  # Mantener acentos y ñ
-        text = re.sub(r'\s+', ' ', text)  # Normalizar espacios
+        # text = re.sub(r'[^\w\sáéíóúñü]', '', text)  # Mantener acentos y ñ
+        # text = re.sub(r'\s+', ' ', text)  # Normalizar espacios
+        text = text.lower()  # Normalizar a minúsculas
+        text = re.sub(r'[^\w\sáéíóúñü]', ' ', text)
+        # Eliminar números si no son relevantes
+        text = re.sub(r'\d+', '', text)
+        # Manejar espacios múltiples
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        
         # Lematización en lugar de stemming para mantener mejor el significado
         nlp = load('es_core_news_sm')
         doc = nlp(text)
-        tokens = [token.lemma_ for token in doc if not token.is_stop]
+        tokens = [token.lemma_ for token in doc 
+          if not token.is_stop and len(token.lemma_) > 2]
         
         return ' '.join(tokens)
 
@@ -107,7 +123,7 @@ class SentimentAnalyzer:
         combined_embedding = torch.cat((cls_embedding, mean_embedding), dim=1)
         
         return combined_embedding.numpy()
-    def prepare_data(self, df):
+    def prepare_data_2(self, df):
         print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
         # Mapear preguntas a sentimientos
@@ -155,28 +171,97 @@ class SentimentAnalyzer:
         X_balanced, y_balanced = smote.fit_resample(X, y)
         
         return X_balanced, y_balanced
-    def train_svm(self, X, y):  
-        print("Entrenando modelo...")
-        """Entrena el modelo de clasificación."""
-        # División del dataset
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    def prepare_data(self, df):
+        """Versión mejorada de prepare_data con manejo robusto de balance de clases."""
+        print(f"Preparando datos para el entrenamiento...")
         
-        # Entrenamiento del modelo
-        self.svm_classifier.fit(X_train, y_train)
-        
-        # Validación cruzada
-        cv_scores = cross_val_score(self.svm_classifier, X, y, cv=5)
-        
-        # Evaluación en conjunto de prueba
-        y_pred = self.svm_classifier.predict(X_test)
-        
-        return {
-            'cv_scores': cv_scores,
-            'classification_report': classification_report(y_test, y_pred),
-            'confusion_matrix': confusion_matrix(y_test, y_pred),
-            'test_data': (X_test, y_test, y_pred)
+        # Mantener el mapping existente
+        sentiment_mapping = {
+            1: 'alegria', 6: 'alegria',
+            2: 'tristeza',
+            3: 'estres', 9: 'estres',
+            4: 'inquietud', 5: 'inquietud',
+            7: 'miedo', 10: 'miedo',
+            8: 'enojo'
         }
-    def find_best_params_svm(self, X, y):
+        
+        texts = []
+        labels = []
+        
+        # Mapeo de números de pregunta a nombres de columna
+        column_mapping = {i: f"pregunta_{i}" for i in range(1, 11)}
+        
+        # Recolectar textos y etiquetas
+        for idx, row in df.iterrows():
+            for q_num, column_name in column_mapping.items():
+                if column_name in df.columns:
+                    text = row[column_name]
+                    processed_text = self.preprocess_text(text)
+                    if processed_text:
+                        texts.append(processed_text)
+                        labels.append(sentiment_mapping[q_num])
+        
+        # Obtener características BERT
+        bert_features = np.array([
+            self.get_bert_embedding(text)[0] 
+            for text in texts
+        ])
+        
+        # Obtener características n-grama
+        ngram_features = self.ngram_vectorizer.fit_transform(texts)
+        
+        # Combinar características
+        X = np.hstack([
+            bert_features,
+            ngram_features.toarray()
+        ])
+        
+        # Codificar etiquetas
+        y = self.label_encoder.fit_transform(labels)
+        
+        # Verificar el balance de clases
+        unique_labels, counts = np.unique(y, return_counts=True)
+        class_distribution = dict(zip(unique_labels, counts))
+        print("Distribución de clases original:", class_distribution)
+        
+        try:
+            # Intentar ADASYN primero con parámetros ajustados
+            adasyn = ADASYN(
+                random_state=42,
+                sampling_strategy='auto',
+                n_neighbors=min(5, min(counts) - 1),  # Ajustar vecinos basado en el tamaño de la clase más pequeña
+            )
+            X_balanced, y_balanced = adasyn.fit_resample(X, y)
+            print("Balanceo exitoso con ADASYN")
+            
+        except ValueError as e:
+            print(f"ADASYN falló: {str(e)}")
+            print("Intentando SMOTE como alternativa...")
+            
+            try:
+                # Intentar SMOTE como respaldo
+                smote = SMOTE(
+                    random_state=42,
+                    sampling_strategy='auto',
+                    k_neighbors=min(5, min(counts) - 1)
+                )
+                X_balanced, y_balanced = smote.fit_resample(X, y)
+                print("Balanceo exitoso con SMOTE")
+                
+            except ValueError as e:
+                print(f"SMOTE también falló: {str(e)}")
+                print("Usando datos originales sin balanceo...")
+                X_balanced, y_balanced = X, y
+        
+        # Verificar el balance final
+        unique_labels, counts = np.unique(y_balanced, return_counts=True)
+        final_distribution = dict(zip(unique_labels, counts))
+        print("Distribución de clases final:", final_distribution)
+        
+        return X_balanced, y_balanced
+
+    def find_best_parameters(self, X, y):
         """Versión mejorada de train_svm con RandomizedSearchCV."""
         print("Entrenando modelo con RandomizedSearchCV...")
         
@@ -214,14 +299,37 @@ class SentimentAnalyzer:
             'confusion_matrix': confusion_matrix(y_test, y_pred),
             'test_data': (X_test, y_test, y_pred)
         }
+    def train_svm(self, X, y):  
+        print("Entrenando modelo...")
+        """Entrena el modelo de clasificación."""
+        # División del dataset
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        
+        # Entrenamiento del modelo
+        self.svm_classifier.fit(X_train, y_train)
+        
+        # Validación cruzada
+        cv_scores = cross_val_score(self.svm_classifier, X, y, cv=5)
+        
+        # Evaluación en conjunto de prueba
+        y_pred = self.svm_classifier.predict(X_test)
+        
+        return {
+            'cv_scores': cv_scores,
+            'classification_report': classification_report(y_test, y_pred),
+            'confusion_matrix': confusion_matrix(y_test, y_pred),
+            'test_data': (X_test, y_test, y_pred)
+        }
     def train_naive_bayes(self, X, y):
         """Entrena y evalúa un modelo Naive Bayes."""
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         
         self.nb_classifier.fit(X_train, y_train)
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         
+        cv_scores = cross_val_score(self.nb_classifier, X, y, cv=skf)
         # Validación cruzada
-        cv_scores = cross_val_score(self.nb_classifier, X, y, cv=5)
+        # cv_scores = cross_val_score(self.nb_classifier, X, y, cv=5)
         
         # Evaluación
         y_pred = self.nb_classifier.predict(X_test)
@@ -253,13 +361,37 @@ class SentimentAnalyzer:
             'confusion_matrix': confusion_matrix(y_test, y_pred),
             'test_data': (X_test, y_test, y_pred)
         }
-    def predict_sentiment(self, text):
+    def predict_sentiment_2(self, text):
         print("Prediciendo sentimiento...")
         """Predice el sentimiento para un nuevo texto."""
         processed_text = self.preprocess_text(text)
         embedding = self.get_bert_embedding(processed_text)
         prediction = self.svm_classifier.predict(embedding)
         probabilities = self.svm_classifier.predict_proba(embedding)
+        sentiment = self.label_encoder.inverse_transform(prediction)[0]
+        return sentiment, dict(zip(self.label_encoder.classes_, probabilities[0]))
+    
+    def predict_sentiment(self, text):
+        """Versión actualizada de predict_sentiment para trabajar con las nuevas características."""
+        print("Prediciendo sentimiento...")
+        processed_text = self.preprocess_text(text)
+        
+        # Obtener embedding BERT
+        bert_embedding = self.get_bert_embedding(processed_text)
+        
+        # Obtener características n-grama
+        ngram_features = self.ngram_vectorizer.transform([processed_text])
+        
+        # Combinar características
+        combined_features = np.hstack([
+            bert_embedding,
+            ngram_features.toarray()
+        ])
+        
+        # Realizar predicción
+        prediction = self.svm_classifier.predict(combined_features)
+        probabilities = self.svm_classifier.predict_proba(combined_features)
+        
         sentiment = self.label_encoder.inverse_transform(prediction)[0]
         return sentiment, dict(zip(self.label_encoder.classes_, probabilities[0]))
     def color_texto(self, texto, color):
@@ -276,8 +408,8 @@ def main():
     # Cargar datos
     df = pd.read_csv('dataset_normalizado_utf8.csv')
     
-    df = df[df['edad'] <= 30]
-    df = df[df['grado_estudios'] != "Maestría"]
+    # df = df[df['edad'] <= 30]
+    # df = df[df['grado_estudios'] != "Maestría"]
     
     df = df[df['nivel_socioeconomico'] != "Alto"] # COn esta solamente, sale chido
     
@@ -329,6 +461,8 @@ def main():
     results_nb = analyzer.train_naive_bayes(X, y)
     results_knn = analyzer.train_knn(X, y)
     
+    # print(results_svm['best_params'])
+    # print(results_svm['best_score'])
     
     end_time = time.time()
     

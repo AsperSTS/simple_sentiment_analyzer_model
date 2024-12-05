@@ -1,0 +1,72 @@
+{
+    "experiment_id": "run23",
+    "timestamp": "2024-12-05 02:04:15",
+    "****Observaciones****": "Eliminados los de status alto y con anasyn en vez de smote ",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "rbf",
+        "C": 9.795846,
+        "tolerance": 0.001,
+        "class_weight": null
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.7536781406851778,
+            "std": 0.039188355782699726,
+            "scores": [
+                0.7349926793557833,
+                0.6939970717423133,
+                0.7525622254758418,
+                0.7759882869692533,
+                0.8108504398826979
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.75,
+                "recall": 0.81,
+                "f1-score": 0.78,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.92,
+                "recall": 0.85,
+                "f1-score": 0.88,
+                "support": 103
+            },
+            "2": {
+                "precision": 0.65,
+                "recall": 0.67,
+                "f1-score": 0.66,
+                "support": 118
+            },
+            "3": {
+                "precision": 0.68,
+                "recall": 0.67,
+                "f1-score": 0.68,
+                "support": 116
+            },
+            "4": {
+                "precision": 0.79,
+                "recall": 0.83,
+                "f1-score": 0.81,
+                "support": 114
+            },
+            "5": {
+                "precision": 0.88,
+                "recall": 0.79,
+                "f1-score": 0.83,
+                "support": 116
+            }
+        }
+    },
+    "execution_metrics": {
+        "total_execution_time": 1303.274272441864
+    }
+}

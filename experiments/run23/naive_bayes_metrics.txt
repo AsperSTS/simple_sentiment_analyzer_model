@@ -1,0 +1,23 @@
+Métricas del experimento - naive_bayes
+==================================================
+
+Resultados de Validación Cruzada:
+Media: 0.6977
+Desviación estándar: 0.0281
+
+Reporte de Clasificación:
+              precision    recall  f1-score   support
+
+           0       0.78      0.62      0.69       116
+           1       0.75      0.82      0.78       103
+           2       0.65      0.42      0.51       118
+           3       0.69      0.64      0.66       116
+           4       0.74      0.75      0.75       114
+           5       0.60      0.93      0.73       116
+
+    accuracy                           0.69       683
+   macro avg       0.70      0.70      0.69       683
+weighted avg       0.70      0.69      0.69       683
+
+
+Tiempo de ejecución: 1303.27 segundos
