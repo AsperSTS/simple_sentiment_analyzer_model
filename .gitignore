@@ -6,3 +6,5 @@ __pycache__/
 models/
 !label_encoder.pkl
 *.npy
+prepared_data_X.npy
+prepared_data_y.npy
