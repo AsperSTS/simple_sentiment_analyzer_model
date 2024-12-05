@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score
+from scipy.stats import uniform, randint
+from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
@@ -21,13 +22,6 @@ from utils import AnalyzerUtils
 warnings.filterwarnings('ignore')
 
 
-# param_grid = {
-#     'C': [0.1, 1, 2, 5, 10],
-#     'kernel': ['linear', 'rbf'],
-#     'gamma': ['scale', 'auto', 0.1, 1],
-#     'class_weight': ['balanced', None]
-# }
-
 class SentimentAnalyzer:
 
     def __init__(self):
@@ -43,19 +37,27 @@ class SentimentAnalyzer:
             self.label_encoder = LabelEncoder()
             
             # Initialize SVM parameters
-            self.svm_c_parameter = 2
-            self.svm_kernel_parameter = 'linear'
-            
-            self.svm_tolerance_parameter = 0.0001
-            self.svm_class_weight_parameter = "balanced"
+            self.svm_c_parameter = 9.795846
+            self.svm_kernel_parameter = 'rbf'
+            self.svm_gamma_parameter = 0.39615023
+            self.svm_tolerance_parameter = 0.001
+            self.svm_class_weight_parameter = None
             
             # Initialize all classifiers
             self.svm_classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
                                 C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
-                                class_weight=self.svm_class_weight_parameter)
+                                class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter)
             self.nb_classifier = GaussianNB()
             self.knn_classifier = KNeighborsClassifier(n_neighbors=6)
             
+            # Definir espacio de búsqueda para RandomizedSearchCV
+            self.param_distributions = {
+                'C': uniform(0.1, 10.0),
+                'kernel': ['linear', 'rbf', 'poly'],
+                'gamma': uniform(0.001, 1.0),
+                'class_weight': ['balanced', None],
+                'degree': randint(2, 5)  # Solo para kernel poly
+            }
             
             nltk.download('punkt')
             nltk.download('stopwords')
@@ -77,15 +79,34 @@ class SentimentAnalyzer:
         
         return ' '.join(tokens)
 
-    def get_bert_embedding(self, text):
+    # def get_bert_embedding(self, text):
         
+    #     print("Obteniendo embedding BERT...")
+    #     inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+    #     with torch.no_grad():
+    #         outputs = self.model(**inputs)
+    #     # Usar la media de todos los embeddings
+    #     return outputs.last_hidden_state.mean(dim=1).numpy()
+    def get_bert_embedding(self, text):
         print("Obteniendo embedding BERT...")
+        
+        # Tokenización
         inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+        
         with torch.no_grad():
+            # Obtener las salidas del modelo
             outputs = self.model(**inputs)
-        # Usar la media de todos los embeddings
-        return outputs.last_hidden_state.mean(dim=1).numpy()
-
+            
+        # Usar el token [CLS] (primera posición) para la representación global del texto
+        cls_embedding = outputs.last_hidden_state[:, 0, :]
+        
+        # Usar la media de todos los embeddings (promedio de todos los tokens)
+        mean_embedding = outputs.last_hidden_state.mean(dim=1)
+        
+        # Combinar [CLS] y la media
+        combined_embedding = torch.cat((cls_embedding, mean_embedding), dim=1)
+        
+        return combined_embedding.numpy()
     def prepare_data(self, df):
         print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
@@ -155,6 +176,44 @@ class SentimentAnalyzer:
             'confusion_matrix': confusion_matrix(y_test, y_pred),
             'test_data': (X_test, y_test, y_pred)
         }
+    def find_best_params_svm(self, X, y):
+        """Versión mejorada de train_svm con RandomizedSearchCV."""
+        print("Entrenando modelo con RandomizedSearchCV...")
+        
+        # División del dataset
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        
+        # Configurar y ejecutar RandomizedSearchCV
+        random_search = RandomizedSearchCV(
+            estimator=self.svm_classifier,
+            param_distributions=self.param_distributions,
+            n_iter=100,  # Número de combinaciones a probar
+            cv=5,
+            verbose=2,
+            random_state=42,
+            n_jobs=-1  # Usar todos los cores disponibles
+        )
+        
+        # Entrenar el modelo
+        random_search.fit(X_train, y_train)
+        
+        # Actualizar el clasificador con los mejores parámetros
+        self.svm_classifier = random_search.best_estimator_
+        
+        # Evaluación en conjunto de prueba
+        y_pred = self.svm_classifier.predict(X_test)
+        
+        # Retornar resultados
+        return {
+            'cv_scores': random_search.cv_results_['mean_test_score'],
+            'best_params': random_search.best_params_,
+            'best_score': random_search.best_score_,
+            'classification_report': classification_report(y_test, y_pred),
+            'confusion_matrix': confusion_matrix(y_test, y_pred),
+            'test_data': (X_test, y_test, y_pred)
+        }
     def train_naive_bayes(self, X, y):
         """Entrena y evalúa un modelo Naive Bayes."""
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -217,9 +276,10 @@ def main():
     # Cargar datos
     df = pd.read_csv('dataset_normalizado_utf8.csv')
     
-    # df = df[df['edad'] <= 30]
-    # df = df[df['grado_estudios'] != "Maestría"]
-    df = df[df['nivel_socioeconomico'] != "Alto"]
+    df = df[df['edad'] <= 30]
+    df = df[df['grado_estudios'] != "Maestría"]
+    
+    df = df[df['nivel_socioeconomico'] != "Alto"] # COn esta solamente, sale chido
     
     analyzer = SentimentAnalyzer()
     
