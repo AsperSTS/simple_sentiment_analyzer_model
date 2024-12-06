@@ -1,0 +1,23 @@
+Métricas del experimento - svm
+==================================================
+
+Resultados de Validación Cruzada:
+Media: 0.7490
+Desviación estándar: 0.0369
+
+Reporte de Clasificación:
+              precision    recall  f1-score   support
+
+           0       0.76      0.78      0.77       116
+           1       0.86      0.86      0.86       103
+           2       0.64      0.65      0.65       118
+           3       0.65      0.69      0.67       116
+           4       0.76      0.75      0.76       114
+           5       0.85      0.78      0.81       116
+
+    accuracy                           0.75       683
+   macro avg       0.75      0.75      0.75       683
+weighted avg       0.75      0.75      0.75       683
+
+
+Tiempo de ejecución: 108.75 segundos

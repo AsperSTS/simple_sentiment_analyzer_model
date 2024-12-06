@@ -1,0 +1,72 @@
+{
+    "experiment_id": "run27",
+    "timestamp": "2024-12-06 01:44:55",
+    "****Observaciones****": "Nada, test",
+    "model_parameters": {
+        "embedding_model": "PlanTL-GOB-ES/roberta-base-bne",
+        "classifier": "SVM",
+        "kernel": "rbf",
+        "C": 9.795846,
+        "tolerance": 0.001,
+        "class_weight": null
+    },
+    "preprocessing_parameters": {
+        "stemmer": "SnowballStemmer-spanish",
+        "remove_stopwords": true,
+        "max_length": 512
+    },
+    "performance_metrics": {
+        "cross_validation_scores": {
+            "mean": 0.7489929283864957,
+            "std": 0.03691921429415542,
+            "scores": [
+                0.7379209370424598,
+                0.6969253294289898,
+                0.7408491947291361,
+                0.7584187408491947,
+                0.8108504398826979
+            ]
+        },
+        "classification_metrics": {
+            "0": {
+                "precision": 0.76,
+                "recall": 0.78,
+                "f1-score": 0.77,
+                "support": 116
+            },
+            "1": {
+                "precision": 0.86,
+                "recall": 0.86,
+                "f1-score": 0.86,
+                "support": 103
+            },
+            "2": {
+                "precision": 0.64,
+                "recall": 0.65,
+                "f1-score": 0.65,
+                "support": 118
+            },
+            "3": {
+                "precision": 0.65,
+                "recall": 0.69,
+                "f1-score": 0.67,
+                "support": 116
+            },
+            "4": {
+                "precision": 0.76,
+                "recall": 0.75,
+                "f1-score": 0.76,
+                "support": 114
+            },
+            "5": {
+                "precision": 0.85,
+                "recall": 0.78,
+                "f1-score": 0.81,
+                "support": 116
+            }
+        }
+    },
+    "execution_metrics": {
+        "total_execution_time": 108.75102376937866
+    }
+}

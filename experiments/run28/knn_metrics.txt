@@ -1,0 +1,23 @@
+Métricas del experimento - knn
+==================================================
+
+Resultados de Validación Cruzada:
+Media: 0.6832
+Desviación estándar: 0.0224
+
+Reporte de Clasificación:
+              precision    recall  f1-score   support
+
+           0       0.81      0.65      0.72       212
+           1       0.56      0.97      0.71       239
+           2       0.72      0.53      0.61       255
+           3       0.73      0.48      0.58       222
+           4       0.89      0.54      0.67       212
+           5       0.58      0.81      0.67       240
+
+    accuracy                           0.67      1380
+   macro avg       0.71      0.66      0.66      1380
+weighted avg       0.71      0.67      0.66      1380
+
+
+Tiempo de ejecución: 1.09 segundos

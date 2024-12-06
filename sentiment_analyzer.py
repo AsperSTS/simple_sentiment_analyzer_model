@@ -4,9 +4,8 @@ from scipy.stats import uniform, randint
 from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV, StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from transformers import AutoTokenizer, AutoModel
 import torch
@@ -14,7 +13,7 @@ from nltk.corpus import stopwords
 import re
 import nltk
 import warnings
-from imblearn.over_sampling import SMOTE,ADASYN
+from imblearn.over_sampling import SMOTE
 from spacy import load
 import time 
 from utils import AnalyzerUtils
@@ -24,74 +23,108 @@ warnings.filterwarnings('ignore')
 class SentimentAnalyzer:
 
     def __init__(self, imported_class):
-            self.imported_class = imported_class
-            self.utils = AnalyzerUtils(self)
-            
-            self.generate_train_test_data = True
-            self.remarks = "None"    
-            self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
-                     
-            self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
-            self.model = AutoModel.from_pretrained(self.pretrained_model_name)
-            self.label_encoder = LabelEncoder()
-            
-            # Initialize SVM parameters
-            self.svm_c_parameter = 9.795846
-            self.svm_kernel_parameter = 'rbf'
-            self.svm_gamma_parameter = 0.39615023
-            self.svm_tolerance_parameter = 0.001
-            self.svm_class_weight_parameter = None
-            
-            
-            # Initialize all classifiers
-            self.svm_classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
-                                C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
-                                class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter)
-            self.svm_precision_result = None
-            
-            self.nb_classifier = GaussianNB()
-            self.knn_classifier = KNeighborsClassifier(n_neighbors=6)
-            
-            # Definir espacio de búsqueda para RandomizedSearchCV
-            self.param_distributions = {
-                'C': uniform(0.1, 10.0),
-                'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-                'gamma': uniform(0.001, 1.0),
-                'class_weight': ['balanced', None],
-                'degree': randint(2, 5)  # Solo para kernel poly
-            }
-            
-            nltk.download('punkt')
-            nltk.download('stopwords')
-            self.stop_words = set(stopwords.words('spanish'))
-            if not self.imported_class:
-                self.experiment_dir, self.current_run_number = self.utils.create_experiments_directory("experiments")
-                self.models_dir = self.utils.create_models_directory("best_models")
+        """
+        Constructor de la clase SentimentAnalyzer.
+        
+        Args:
+            imported_class (bool): True si se va a importar una clase desde otro archivo, False en caso contrario.
+        """
+        self.imported_class = imported_class
+        self.utils = AnalyzerUtils(self)
+        
+        self.generate_train_test_data = True
+        self.remarks = "None"    
+        self.pretrained_model_name = "PlanTL-GOB-ES/roberta-base-bne"
+                    
+        self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name)
+        self.model = AutoModel.from_pretrained(self.pretrained_model_name)
+        self.label_encoder = LabelEncoder()
+        
+        # Initialize SVM parameters
+        self.svm_c_parameter = 9.795846 #1 #9.795846
+        self.svm_kernel_parameter = 'rbf' # 'linear'#'rbf'
+        self.svm_gamma_parameter = 0.39615023 #'scale' #0.39615023
+        self.svm_tolerance_parameter = 0.001
+        self.svm_class_weight_parameter = None
+        
+        
+        # Initialize all classifiers
+        self.svm_classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
+                            C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
+                            class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter)
+        self.svm_precision_result = None
+        
+        self.nb_classifier = GaussianNB()
+        self.knn_classifier = KNeighborsClassifier(n_neighbors=6)
+        
+        # Definir espacio de búsqueda para RandomizedSearchCV
+        self.param_distributions = {
+            'C': uniform(0.1, 10.0),
+            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            'gamma': uniform(0.001, 1.0),
+            'class_weight': ['balanced', None],
+            'degree': randint(2, 5)  # Solo para kernel poly
+        }
+        
+        nltk.download('punkt')
+        nltk.download('stopwords')
+        self.stop_words = set(stopwords.words('spanish'))
+        if not self.imported_class:
+            self.experiment_dir, self.current_run_number = self.utils.create_experiments_directory("experiments")
+            self.models_dir = self.utils.create_models_directory("best_models")
 
     def preprocess_text(self, text):
-        print("Preprocesando el texto...")
-        """Preprocesa el texto aplicando normalización básica."""
-        if not isinstance(text, str):
-            return ""     
+        """
+        Preprocesa el texto aplicando normalización básica y lematización.
         
-        # text = re.sub(r'[^\w\sáéíóúñü]', '', text)  # Mantener acentos y ñ
-        # text = re.sub(r'\s+', ' ', text)  # Normalizar espacios
-        text = text.lower()  # Normalizar a minúsculas
+        Parameters:
+        text (str): El texto a preprocesar.
+        
+        Returns:
+        str: El texto preprocesado.
+        """
+        print("Preprocesando el texto...")
+        
+        # Verificar que se pase un string
+        if not isinstance(text, str):
+            return ""      
+        
+        # Eliminar puntuación y caracteres especiales excepto acentos y ñ
         text = re.sub(r'[^\w\sáéíóúñü]', ' ', text)
-        # Eliminar números si no son relevantes
+        
+        # Normalizar a minúsculas
+        text = text.lower()
+        
+        # Eliminar números si no son relevantes (no se hace por defecto)
         text = re.sub(r'\d+', '', text)
+        
         # Manejar espacios múltiples
         text = re.sub(r'\s+', ' ', text).strip()
         
         
         # Lematización en lugar de stemming para mantener mejor el significado
+        # Se utiliza el modelo de lenguaje español de spaCy
+        
+        # Cargar el modelo de lenguaje español
         nlp = load('es_core_news_sm')
+        
+        # Procesar el texto con el modelo de lenguaje
         doc = nlp(text)
-        tokens = [token.lemma_ for token in doc 
-          if not token.is_stop and len(token.lemma_) > 2]
+        
+        # Extraer los tokens lematizados sin stopwords y con longitud mayor a 2
+        tokens = [token.lemma_ for token in doc if not token.is_stop and len(token.lemma_) > 2]
         
         return ' '.join(tokens)
     def get_bert_embedding_cls_mean(self, text):
+        """
+        Obtiene el embedding BERT para un texto dado, utilizando el token [CLS] y la media de todos los embeddings.
+        
+        Parameters:
+        text (str): El texto para el que se obtendrá el embedding BERT.
+        
+        Returns:
+        numpy.ndarray: El embedding BERT para el texto, con shape (1, 768).
+        """
         print("Obteniendo embedding BERT...")
         
         # Tokenización
@@ -114,6 +147,21 @@ class SentimentAnalyzer:
     
     ## VERSIÓN ANTERIOR
     def prepare_data(self, df):
+        """
+        Prepara los datos para el entrenamiento.
+
+        Toma un DataFrame como parámetro y devuelve dos arrays numpy: X con las
+        características de los textos y y con las etiquetas correspondientes.
+
+        Primero, se mapean las preguntas a sentimientos utilizando un diccionario
+        sentiment_mapping. Luego, se itera sobre cada fila del DataFrame y se
+        para normalizar y preprocesar cada texto. Si el texto procesado no es vacío,
+        se obtiene su embedding BERT y se agrega a la lista X, junto con su etiqueta
+        correspondiente en la lista y.
+
+        Finalmente, se utiliza la técnica de oversampling SMOTE para balancear las
+        clases y se devuelve el par (X_balanced, y_balanced) con los datos balanceados.
+        """
         print(f"Preparando datos para el entrenamiento...")
         """Prepara los datos para el entrenamiento."""
         # Mapear preguntas a sentimientos
@@ -271,10 +319,26 @@ class SentimentAnalyzer:
 def main():
     
     # Cargar datos
-    df = pd.read_csv('dataset_normalizado_utf8.csv')
+    # df = pd.read_csv('dataset_normalizado_utf8.csv')
+    
+    """
+    Main function to execute the sentiment analysis pipeline.
+
+    This function performs the following tasks:
+    1. Loads the dataset from a specified CSV file.
+    2. Initializes the SentimentAnalyzer instance.
+    3. Collects user input for observations and dataset preparation preferences.
+    4. Conducts exploratory data analysis (EDA) and saves the results.
+    5. Prepares or loads training and test data based on user input.
+    6. Trains and evaluates multiple classifiers: SVM, Naive Bayes, and KNN.
+    7. Saves model metrics and visualizes results.
+    8. Saves the trained SVM model components for future use.
+    9. Predicts sentiment for a list of sample texts and prints the results.
+    """
+    df = pd.read_csv('dataset_normalizado_utf8_2.csv')
     # 
-    # df = df[df['edad'] <= 30]
-    # df = df[df['grado_estudios'] != "Maestría"]
+    df = df[df['edad'] <= 30]
+    df = df[df['grado_estudios'] != "Maestría"]
     df = df[df['nivel_socioeconomico'] != "Alto"] # Con esta solamente, sale chido
     
     analyzer = SentimentAnalyzer(False)
