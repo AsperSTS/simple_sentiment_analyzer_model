@@ -17,6 +17,7 @@ from imblearn.over_sampling import SMOTE
 from spacy import load
 import time 
 from utils import AnalyzerUtils
+import os
 warnings.filterwarnings('ignore')
 
 
@@ -214,7 +215,7 @@ class SentimentAnalyzer:
         random_search = RandomizedSearchCV(
             estimator=self.svm_classifier,
             param_distributions=self.param_distributions,
-            n_iter=100,  # Número de combinaciones a probar
+            n_iter=25,  # Número de combinaciones a probar
             cv=5,
             verbose=2,
             random_state=42,
@@ -381,66 +382,69 @@ def main():
         analyzer.utils.save_train_test_data(X, y, file_prefix="prepared_data")
         
     # Ejecutar el análisis para buscar mejores parametros para SVM
-    # best_results_svm = analyzer.find_best_parameters(X, y)    
-    # print(results_svm['best_params'])
-    
-    start_time = time.time()
-    results_svm = analyzer.train_svm(X, y)
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Tiempo de ejecución SVM: {execution_time:.2f} segundos")
-    analyzer.utils.save_multi_model_metrics(results_svm, 'svm', execution_time)
-    analyzer.utils.plot_results(results_svm, "svm")
-    analyzer.utils.save_svm_experiment_metrics(results_svm, execution_time)
+    best_results_svm = analyzer.find_best_parameters(X, y)    
+    print(best_results_svm['best_params'])
     
     
-    start_time = time.time()
-    results_nb = analyzer.train_naive_bayes(X, y)
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Tiempo de ejecución Naive Bayes: {execution_time:.2f} segundos")
-    analyzer.utils.save_multi_model_metrics(results_nb, 'naive_bayes', execution_time)
-    analyzer.utils.plot_results(results_nb, "naive_bayes")
-    
-    
-    start_time = time.time()
-    results_knn = analyzer.train_knn(X, y)
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Tiempo de ejecución KNN: {execution_time:.2f} segundos")
-    analyzer.utils.save_multi_model_metrics(results_knn, 'knn', execution_time)
-    analyzer.utils.plot_results(results_knn, "knn")
-    
-    # Lista de textos para testear el modelo
-    texts = [
-        "Me siento muy contento por haber logrado mis metas",
-        "Estoy muy triste, no sé qué hacer",
-        "Hoy es un buen día, estoy emocionado",
-        "No me siento bien, creo que estoy enfermo",
-        "Estoy muy enojado por lo que sucedió",
-        "Estoy muy emocionado de empezar mi nuevo trabajo"
-    ]
-    
-    # Saving SVM Model
-    components_svm_model = {
-        'classifier': analyzer.svm_classifier,
-        'label_encoder': analyzer.label_encoder,
-        'tokenizer': analyzer.tokenizer,
-        'model': analyzer.model 
-    }
-    
-    
-    analyzer.utils.save_model(components_svm_model)
-    
-    # Recorrer la lista de textos para obtener las predicciones
-    for text in texts:
-        sentiment, probs = analyzer.predict_sentiment(text)
-        print(f"\nTexto de ejemplo: {text}")
-        print(f"Sentimiento predicho: {sentiment}")
-        print("\nProbabilidades por clase:")
-        for sentiment_class, prob in probs.items():
-            print(f"{sentiment_class}: {prob:.2f}")
+    if 'best_results_svm' not in locals() and 'best_results_svm' not in globals():
+        start_time = time.time()
+        results_svm = analyzer.train_svm(X, y)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Tiempo de ejecución SVM: {execution_time:.2f} segundos")
+        analyzer.utils.save_multi_model_metrics(results_svm, 'svm', execution_time)
+        analyzer.utils.plot_results(results_svm, "svm")
+        analyzer.utils.save_svm_experiment_metrics(results_svm, execution_time)
         
+        
+        start_time = time.time()
+        results_nb = analyzer.train_naive_bayes(X, y)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Tiempo de ejecución Naive Bayes: {execution_time:.2f} segundos")
+        analyzer.utils.save_multi_model_metrics(results_nb, 'naive_bayes', execution_time)
+        analyzer.utils.plot_results(results_nb, "naive_bayes")
+        
+        
+        start_time = time.time()
+        results_knn = analyzer.train_knn(X, y)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Tiempo de ejecución KNN: {execution_time:.2f} segundos")
+        analyzer.utils.save_multi_model_metrics(results_knn, 'knn', execution_time)
+        analyzer.utils.plot_results(results_knn, "knn")
+        
+        # Lista de textos para testear el modelo
+        texts = [
+            "Me siento muy contento por haber logrado mis metas",
+            "Estoy muy triste, no sé qué hacer",
+            "Hoy es un buen día, estoy emocionado",
+            "No me siento bien, creo que estoy enfermo",
+            "Estoy muy enojado por lo que sucedió",
+            "Estoy muy emocionado de empezar mi nuevo trabajo"
+        ]
+        
+        # Saving SVM Model
+        components_svm_model = {
+            'classifier': analyzer.svm_classifier,
+            'label_encoder': analyzer.label_encoder,
+            'tokenizer': analyzer.tokenizer,
+            'model': analyzer.model 
+        }
+        
+        
+        analyzer.utils.save_model(components_svm_model)
+        
+        # Recorrer la lista de textos para obtener las predicciones
+        for text in texts:
+            sentiment, probs = analyzer.predict_sentiment(text)
+            print(f"\nTexto de ejemplo: {text}")
+            print(f"Sentimiento predicho: {sentiment}")
+            print("\nProbabilidades por clase:")
+            for sentiment_class, prob in probs.items():
+                print(f"{sentiment_class}: {prob:.2f}")
+    else:
+        os.rmdir(analyzer.experiment_dir)
 
 if __name__ == "__main__":
     main()
