@@ -13,11 +13,11 @@ class AnalyzerUtils:
     def __init__(self, analyzer):
         self.analyzer = analyzer
         
-    def create_experiment_directory(self):
+    def create_experiments_directory(self, base_dir='directorio'):
         """
         Crea un nuevo directorio para el experimento actual.
         """
-        base_dir = 'experiments'
+        # base_dir = 'experiments'
         os.makedirs(base_dir, exist_ok=True)
         
         # Encontrar el siguiente número de ejecución
@@ -32,7 +32,11 @@ class AnalyzerUtils:
         run_dir = os.path.join(base_dir, f'run{next_run}')
         os.makedirs(run_dir)
         
-        return run_dir
+        return run_dir, next_run
+    def create_models_directory(self, base_dir='best_models'):
+        os.makedirs(base_dir, exist_ok=True)
+        return base_dir
+
     def contar_pk1_mas_uno(self, directorio='.'):
 
         contador = 0
@@ -40,8 +44,8 @@ class AnalyzerUtils:
             if archivo.endswith(".pkl"):
                 contador += 1
         return contador + 1
-    def save_model(self, components):
-        with open(os.path.join(self.analyzer.experiment_dir,f'sentiment_model_.pkl'), 'wb') as f:
+    def save_model(self, components, ):
+        with open(os.path.join(self.analyzer.models_dir,f'model_run{self.analyzer.current_run_number}_precision{self.analyzer.svm_precision_result}.pkl'), 'wb') as f:
             pickle.dump(components, f)
         
     def save_svm_experiment_metrics(self, results, execution_time):
@@ -67,7 +71,16 @@ class AnalyzerUtils:
                         }
                     except (ValueError, IndexError):
                         continue  # Saltarse líneas que no pueden ser parseadas correctamente
+        # Calcular la media de las precisiones
+        precisions = [metrics['precision'] for metrics in classification_dict.values()]
+        mean_precision = np.mean(precisions) if precisions else 0.0  # Evitar división por 0
+        mean_precision = int(mean_precision * 100)  # Multiplicar por 100 y convertir a entero
 
+        self.analyzer.svm_precision_result = mean_precision
+        # Mostrar la media de precisión como porcentaje (sin decimales)
+        print(f"Media de precisión: {mean_precision}%")
+        
+        
         metrics_data = {
             'experiment_id': os.path.basename(self.analyzer.experiment_dir),
             'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -264,3 +277,12 @@ class AnalyzerUtils:
         print(f"Datos cargados desde {file_prefix}_X.npy y {file_prefix}_y.npy")
         label_encoder = joblib.load('label_encoder.pkl')
         return X, y, label_encoder
+    def color_texto(self, texto, color):
+        colores = {
+            'rojo': '\033[91m',
+            'verde': '\033[92m',
+            'azul': '\033[94m',
+            'amarillo': '\033[93m',
+            'fin': '\033[0m',  # Restablece el color
+        }
+        return colores.get(color, '') + texto + colores['fin']

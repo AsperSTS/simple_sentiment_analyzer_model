@@ -9,3 +9,4 @@ models/
 prepared_data_X.npy
 prepared_data_y.npy
 bfg-1.14.0.jar
+best_models/
