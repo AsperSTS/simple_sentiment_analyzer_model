@@ -23,8 +23,7 @@ class MultiRouteAugmenter:
         
         self.batch_size = batch_size
         self.num_workers = num_workers
-        
-        # Definir rutas de traducción
+
         self.translation_routes = [
             ('Helsinki-NLP/opus-mt-es-en', 'Helsinki-NLP/opus-mt-en-es'),  # español -> inglés -> español
             ('Helsinki-NLP/opus-mt-es-fr', 'Helsinki-NLP/opus-mt-fr-es'),  # español -> francés -> español
@@ -34,8 +33,7 @@ class MultiRouteAugmenter:
         print("Cargando modelos...")
         self.models = {}
         self.tokenizers = {}
-        
-        # Cargar todos los modelos y tokenizers necesarios
+
         for route in self.translation_routes:
             for model_name in route:
                 if model_name not in self.models:
@@ -46,13 +44,12 @@ class MultiRouteAugmenter:
         torch.set_grad_enabled(False)
 
     def translate(self, texts: List[str], source_model: str, target_model: str) -> List[str]:
-        """Realiza una traducción usando los modelos especificados"""
-        # Codificar con el modelo fuente
+
         encoded = self.tokenizers[source_model](texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
         input_ids = encoded['input_ids'].to(self.device)
         attention_mask = encoded['attention_mask'].to(self.device)
         
-        # Generar traducción
+
         outputs = self.models[source_model].generate(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -60,11 +57,10 @@ class MultiRouteAugmenter:
             length_penalty=0.6,
             max_length=512
         )
-        
-        # Decodificar a texto intermedio
+
         intermediate_texts = self.tokenizers[source_model].batch_decode(outputs, skip_special_tokens=True)
         
-        # Traducir de vuelta al español
+  
         back_encoded = self.tokenizers[target_model](intermediate_texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
         back_outputs = self.models[target_model].generate(
             input_ids=back_encoded['input_ids'].to(self.device),
@@ -89,24 +85,22 @@ class MultiRouteAugmenter:
         new_rows = []
         
         for idx, row in tqdm(df.iterrows(), desc="Procesando filas", total=len(df)):
-            # Crear una variación de la fila
+ 
             new_row = row.copy()
             
-            # Filtrar preguntas válidas
+    
             valid_cols = [col for col in question_cols if pd.notna(row[col]) and row[col].strip()]
             
             if valid_cols:
-                # Seleccionar aleatoriamente 1-2 preguntas para variar
+
                 num_questions = random.randint(1, min(2, len(valid_cols)))
                 cols_to_vary = random.sample(valid_cols, num_questions)
-                
-                # Variar las preguntas seleccionadas
+
                 for col in cols_to_vary:
                     new_row[col] = self.augment_text(row[col])
             
             new_rows.append(new_row)
-        
-        # Combinar dataset original con variaciones
+
         return pd.concat([df, pd.DataFrame(new_rows)], ignore_index=True)
 
 def main():
@@ -120,7 +114,7 @@ def main():
     
     augmented_df = augmenter.augment_dataset(df, question_cols)
     
-    augmented_df.to_csv('dataset_normalizado_utf8_aumentado_balanceado.csv', index=False)
+    augmented_df.to_csv('dataset_normalizado_utf8_aumentado.csv', index=False)
     
     print(f"Dataset original: {len(df)} filas")
     print(f"Dataset aumentado: {len(augmented_df)} filas")

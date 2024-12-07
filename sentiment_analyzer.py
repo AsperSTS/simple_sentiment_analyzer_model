@@ -41,10 +41,11 @@ class SentimentAnalyzer:
         self.model = AutoModel.from_pretrained(self.pretrained_model_name)
         self.label_encoder = LabelEncoder()
         
+        # {'C': 7.213419527486499, 'class_weight': 'balanced', 'degree': 2, 'gamma': 0.6069599747810114, 'kernel': 'rbf'}
         # Initialize SVM parameters
-        self.svm_c_parameter = 9.795846 #1 #9.795846
-        self.svm_kernel_parameter = 'rbf' # 'linear'#'rbf'
-        self.svm_gamma_parameter = 0.39615023 #'scale' #0.39615023
+        self.svm_c_parameter = 7.213419527486499 #1 #9.795846
+        self.svm_kernel_parameter = 'rbf' #'rbf'
+        self.svm_gamma_parameter = 0.6069 #'scale' #0.39615023
         self.svm_tolerance_parameter = 0.001
         self.svm_class_weight_parameter = None
         
@@ -52,7 +53,7 @@ class SentimentAnalyzer:
         # Initialize all classifiers
         self.svm_classifier = SVC(kernel=self.svm_kernel_parameter, probability=True, 
                             C=self.svm_c_parameter, tol=self.svm_tolerance_parameter, 
-                            class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter)
+                            class_weight=self.svm_class_weight_parameter, gamma=self.svm_gamma_parameter, degree=2)
         self.svm_precision_result = None
         
         self.nb_classifier = GaussianNB()
@@ -381,9 +382,9 @@ def main():
         X, y = analyzer.prepare_data(df)
         analyzer.utils.save_train_test_data(X, y, file_prefix="prepared_data")
         
-    # Ejecutar el análisis para buscar mejores parametros para SVM
-    best_results_svm = analyzer.find_best_parameters(X, y)    
-    print(best_results_svm['best_params'])
+    # # Ejecutar el análisis para buscar mejores parametros para SVM
+    # best_results_svm = analyzer.find_best_parameters(X, y)    
+    # print(best_results_svm['best_params'])
     
     
     if 'best_results_svm' not in locals() and 'best_results_svm' not in globals():

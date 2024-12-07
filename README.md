@@ -1,35 +1,64 @@
-# Analizador de Sentimientos con SVM y Embeddings de Roberta
+# Sistema de Análisis de Sentimientos y Aumentación de Datos
 
-Un sistema avanzado de análisis de sentimientos en español que combina Support Vector Machine (SVM) con embeddings del modelo Roberta para clasificación de textos.
+Este proyecto combina un sistema de aumentación de datos mediante traducción multi-ruta con un analizador avanzado de sentimientos que utiliza embeddings de RoBERTa y múltiples clasificadores.
 
 ## Pipeline del Sistema
 ```mermaid
-graph LR
-    A[Texto] --> B[Preprocesamiento]
-    B --> C[Embeddings Roberta]
-    C --> D[Clasificación SVM]
-    D --> E[Predicción]
+graph TD
+    A[Texto Original] --> B[Aumentación Multi-Ruta]
+    B --> C[Traducción]
+    C --> D[Back-Translation]
+    D --> E[Texto Aumentado]
+    
+    E --> F[Preprocesamiento]
+    F --> G[Embeddings RoBERTa]
+    G --> H[Clasificación]
+    H --> I[SVM]
+    H --> J[Naive Bayes]
+    H --> K[KNN]
+    I --> L[Predicción]
+    J --> L
+    K --> L
 ```
 
 ## Características
 
-### Modelos y Técnicas
+### Aumentación de Datos
+- Traducción bidireccional a través de múltiples rutas lingüísticas
+- Procesamiento por lotes
+
+### Análisis de Sentimientos
 - Embeddings contextuales de `PlanTL-GOB-ES/roberta-base-bne`
-- Clasificación mediante SVM, Naive Bayes y KNN
+- Clasificadores múltiples:
+  - SVM (parámetros optimizados: C=7.21, gamma=0.6069, kernel=rbf)
+  - Naive Bayes Gaussiano
+  - KNN (n_neighbors=6)
 - Balanceo de datos con SMOTE
-- Validación cruzada y métricas de evaluación
+- Validación cruzada 
+- Búsqueda aleatoria de hiperparámetros
 
-### Procesamiento
-- Limpieza y normalización de texto
-- Lematización con spaCy
-- Manejo de características específicas del español
-- Eliminación inteligente de stopwords
+### Procesamiento de Texto
+- Limpieza y normalización avanzada
+- Lematización con spaCy (es_core_news_sm)
+- Eliminación de stopwords específicas del español
+- Manejo de caracteres especiales y acentos
+- Tokenización mediante RoBERTa
 
-### Evaluación y Visualización
+### Evaluación y Métricas
+- Validación cruzada con 5 folds
 - Matrices de confusión
-- Reportes de clasificación
-- Visualizaciones interactivas
+- Reportes de clasificación detallados
 - Métricas por modelo
+- Tiempos de ejecución
+- Visualizaciones interactivas
+
+### Clasificación de Sentimientos
+- Alegría (preguntas 1, 6)
+- Tristeza (pregunta 2)
+- Estrés (preguntas 3, 9)
+- Inquietud (preguntas 4, 5)
+- Miedo (preguntas 7, 10)
+- Enojo (pregunta 8)
 
 ## Instalación
 
@@ -41,7 +70,7 @@ cd simple_sentiment_analyzer_model
 
 ### 2. Configurar el Entorno
 
-#### Usando Anaconda creamos un nuevo entorno
+#### Usando Anaconda
 ```bash
 # Crear el entorno desde el archivo environment.yml
 conda env create -f environment.yml
@@ -50,7 +79,7 @@ conda env create -f environment.yml
 conda activate sentiment_analyzer_env
 ```
 
-#### Instalamos dependencias faltantes con pip
+#### O usando pip
 ```bash
 # Instalar dependencias
 pip install -r requirements.txt
@@ -61,15 +90,39 @@ pip install -r requirements.txt
 python -m spacy download es_core_news_sm
 ```
 
-## Clasificación de Sentimientos
-- Alegría
-- Tristeza
-- Estrés
-- Inquietud
-- Miedo
-- Enojo
+## Uso
+
+### Aumentación de Datos
+- Primero asegurarse de tener el csv normalizado y en utf8
+
+```python
+ python back_translation.py
+```
+
+### Análisis de Sentimientos
+- Primero asegurarse de tener el csv con las columnas normalizadas
+```python
+python sentiment_analyzer.py
+```
+
+### Interfaz grafica
+- Asegurarse de tener las dependencias necesarias  
+```python
+streamlit run use_model_gui.py
+```
+
+## Estructura del Proyecto
+```
+proyecto/
+├── experiments/          # Directorio de experimentos
+├── best_models/         # Modelos guardados
+├── utils.py            # Utilidades y funciones auxiliares
+├── requirements.txt    # Dependencias del proyecto
+└── README.md          # Documentación
+```
 
 ## Requisitos del Sistema
-- Python 3.9+
+- Python 3.11+
 - 8GB RAM mínimo
+- Espacio en disco 
 

@@ -31,9 +31,9 @@ education_levels = {
 
 # Dividir por nivel socioeconómico
 socioeconomic_levels = {
-    "socio_low": data[data["Nivel socioeconómico:"].str.contains("Bajo", case=False, na=False)],
-    "socio_middle": data[data["Nivel socioeconómico:"].str.contains("Medio", case=False, na=False)],
-    "socio_high": data[data["Nivel socioeconómico:"].str.contains("Alto", case=False, na=False)],
+    "socio_bajo": data[data["Nivel socioeconómico:"].str.contains("Bajo", case=False, na=False)],
+    "socio_medio": data[data["Nivel socioeconómico:"].str.contains("Medio", case=False, na=False)],
+    "socio_alto": data[data["Nivel socioeconómico:"].str.contains("Alto", case=False, na=False)],
 }
 
 
