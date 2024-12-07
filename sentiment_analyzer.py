@@ -337,7 +337,7 @@ def main():
     8. Saves the trained SVM model components for future use.
     9. Predicts sentiment for a list of sample texts and prints the results.
     """
-    df = pd.read_csv('dataset_normalizado_utf8_2.csv')
+    df = pd.read_csv('dataset_normalizado_utf8_aumentado.csv')
     # 
     df = df[df['edad'] <= 30]
     df = df[df['grado_estudios'] != "Maestría"]
