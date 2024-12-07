@@ -1,6 +1,6 @@
 # Sistema de Análisis de Sentimientos y Aumentación de Datos
 
-Este proyecto combina un sistema de aumentación de datos mediante traducción multi-ruta con un analizador avanzado de sentimientos que utiliza embeddings de RoBERTa y múltiples clasificadores.
+Este proyecto combina un sistema de aumentación de datos mediante traducción multi-ruta con un analizador de sentimientos que utiliza embeddings de RoBERTa y múltiples clasificadores.
 
 ## Pipeline del Sistema
 ```mermaid
